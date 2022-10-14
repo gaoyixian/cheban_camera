@@ -21,6 +21,7 @@ import com.otaliastudios.cameraview.*
 import com.otaliastudios.cameraview.controls.Facing
 import com.otaliastudios.cameraview.controls.Flash
 import com.otaliastudios.cameraview.filter.Filters
+import com.otaliastudios.cameraview.markers.DefaultAutoFocusMarker
 import java.io.File
 import java.io.OutputStream
 import java.net.HttpURLConnection
@@ -92,6 +93,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
             cameraView.facing = Facing.FRONT
         }
 
+        cameraView.setAutoFocusMarker(DefaultAutoFocusMarker())
         CameraLogger.setLogLevel(CameraLogger.LEVEL_VERBOSE)
         cameraView.setLifecycleOwner(this)
         cameraView.addCameraListener(Listener())
