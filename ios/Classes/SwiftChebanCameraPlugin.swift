@@ -79,7 +79,7 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
                     try image!.pngData()?.write(to: URL(fileURLWithPath: path))
                     flutterResult!([
                         "width": Int(image!.size.width),
-                        "height": Int(image!.size.width),
+                        "height": Int(image!.size.height),
                         "type": 2,
                         "origin_file_path": videoUrl.path,
                         "thumbnail_file_path": path,
