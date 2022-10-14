@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">CameraLike</string>
+    <string name="cameraview_default_autofocus_marker">com.otaliastudios.cameraview.markers.DefaultAutoFocusMarker</string>
+    <string name="flash_off">关闭</string>
+    <string name="flash_auto">自动</string>
+    <string name="flash_on">开启</string>
+    <string name="beauty">美颜</string>
+    <string name="picture">图片</string>
+    <string name="video">视频</string>
+    <string name="cancel">取消</string>
+    <string name="translate">转换</string>
+    <string name="remake">重拍</string>
+    <string name="use_photo">使用照片</string>
+    <string name="use_video">使用视频</string>
+
+</resources>
