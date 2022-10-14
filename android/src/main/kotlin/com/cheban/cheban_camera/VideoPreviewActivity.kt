@@ -27,7 +27,6 @@ import java.io.OutputStream
 
 
 class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
-
     companion object {
         var videoResult: VideoResult? = null
     }
@@ -45,7 +44,6 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
             finish()
             return
         }
-        saveVideoToSystemAlbum(videoResult!!.file.path)
         playerImageView = findViewById(R.id.iv_play)
         playerImageView.setOnClickListener(this)
         findViewById<TextView>(R.id.tv_remake).setOnClickListener(this)
@@ -65,9 +63,6 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
         videoView.setOnCompletionListener {
             playerImageView.setImageResource(R.mipmap.play)
         }
-
-
-
     }
 
     override fun onClick(v: View?) {
@@ -79,7 +74,7 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
                 finish()
             }
             R.id.tv_use_video -> {
-
+                saveVideoToSystemAlbum(videoResult!!.file.path)
                 val mMMR = MediaMetadataRetriever()
                 mMMR.setDataSource(this, Uri.fromFile(videoResult!!.file))
                 val bmp = mMMR.frameAtTime
@@ -185,6 +180,4 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
         }
         return false
     }
-
-
 }

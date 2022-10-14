@@ -17,7 +17,6 @@ import com.otaliastudios.cameraview.PictureResult
 import java.io.File
 
 class PicturePreviewActivity : AppCompatActivity(), View.OnClickListener {
-
     companion object {
         var pictureResult: PictureResult? = null
     }
@@ -27,6 +26,8 @@ class PicturePreviewActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var remarkTV: TextView
 
     private lateinit var usePhotoTV: TextView
+
+    private var mBitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +46,8 @@ class PicturePreviewActivity : AppCompatActivity(), View.OnClickListener {
 
         try {
             result.toBitmap(2048, 2048) {
-                bitmap ->
-                saveBitmapGallery(bitmap!!)
+                    bitmap ->
+                mBitmap = bitmap
                 pictureView.setImageBitmap(bitmap)
             }
         } catch (e: UnsupportedOperationException) {
@@ -64,7 +65,9 @@ class PicturePreviewActivity : AppCompatActivity(), View.OnClickListener {
         if (v!!.id == R.id.tv_remake) {
             finish()
         } else {
-
+            if (mBitmap != null) {
+                saveBitmapGallery(mBitmap!!)
+            }
             val destFile = File(filesDir, "picture_${System.currentTimeMillis()}.jpg")
             CameraUtils.writeToFile(requireNotNull(pictureResult?.data), destFile) { file ->
                 if (file != null) {
@@ -106,6 +109,4 @@ class PicturePreviewActivity : AppCompatActivity(), View.OnClickListener {
             return true
         }
     }
-
-
 }
