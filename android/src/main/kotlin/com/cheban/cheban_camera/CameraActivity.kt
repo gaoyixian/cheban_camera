@@ -94,6 +94,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
         }
 
         cameraView.setAutoFocusMarker(DefaultAutoFocusMarker())
+
         CameraLogger.setLogLevel(CameraLogger.LEVEL_VERBOSE)
         cameraView.setLifecycleOwner(this)
         cameraView.addCameraListener(Listener())
@@ -122,9 +123,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
             if (cameraView.isTakingVideo) {
                 Log.w("CameraException", "Captured while taking video. Size=" + result.size)
                 return
-            }
-            if (cameraView.flash == Flash.TORCH) {
-                cameraView.flash = Flash.ON
             }
             // This can happen if picture was taken with a gesture.
             val callbackTime = System.currentTimeMillis()
@@ -184,7 +182,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
                     }
                     Flash.AUTO -> {
                         flashIV.setImageResource(R.mipmap.flash_on)
-                        cameraView.flash = Flash.ON
+                        cameraView.flash = Flash.TORCH
                     }
                     else -> {
                         flashIV.setImageResource(R.mipmap.flash_off)
@@ -212,9 +210,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
                 if (currentChoose == 0) {
                     if (cameraView.isTakingPicture) return
                     captureTime = System.currentTimeMillis()
-                    if (cameraView.flash == Flash.ON && cameraView.facing == Facing.BACK) {
-                        cameraView.flash = Flash.TORCH
-                    }
                     cameraView.takePictureSnapshot()
                 } else {
                     if (cameraView.isTakingVideo) {
