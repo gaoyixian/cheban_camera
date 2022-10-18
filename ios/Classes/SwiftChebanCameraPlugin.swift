@@ -36,7 +36,7 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
                           pickerControl.cameraDevice = .front
                       }
                       pickerControl.delegate = self
-                      pickerControl.videoMaximumDuration = 10
+                      pickerControl.videoMaximumDuration = 15
                       pickerControl.videoQuality = .typeHigh
                       UIApplication.shared.keyWindow!.rootViewController!.present(pickerControl, animated: true)
                   }
