@@ -76,11 +76,11 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
         captureV = findViewById(R.id.v_capture)
 
         if (sourceType == 1) {
-            chooseTab.visibility = View.GONE
+            chooseTab.visibility = View.INVISIBLE
             chooseTab.addTab(chooseTab.newTab().setText(R.string.picture))
         } else if (sourceType == 2) {
             currentChoose = 1
-            chooseTab.visibility = View.GONE
+            chooseTab.visibility = View.INVISIBLE
             captureV.setBackgroundResource(R.drawable.shape_27_corner_bg_red)
             chooseTab.addTab(chooseTab.newTab().setText(R.string.video))
         } else {
