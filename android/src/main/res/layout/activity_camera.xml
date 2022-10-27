@@ -54,26 +54,51 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.otaliastudios.cameraview.CameraView
-        android:id="@+id/camera"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:keepScreenOn="true"
-        app:cameraExperimental="true"
-        app:cameraEngine="camera1"
-        app:cameraPreview="glSurface"
-        app:cameraPlaySounds="false"
-        app:cameraGrid="off"
-        app:cameraFlash="off"
-        app:cameraAudio="on"
-        app:cameraFacing="back"
-        app:cameraGestureTap="autoFocus"
-        app:cameraGestureLongTap="none"
-        app:cameraGesturePinch="zoom"
-        app:cameraGestureScrollHorizontal="filterControl1"
-        app:cameraGestureScrollVertical="exposureCorrection"
-        app:cameraMode="picture" />
+        android:layout_weight="1">
+
+        <com.otaliastudios.cameraview.CameraView
+            android:id="@+id/camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true"
+            app:cameraExperimental="true"
+            app:cameraEngine="camera1"
+            app:cameraPreview="glSurface"
+            app:cameraPlaySounds="false"
+            app:cameraGrid="off"
+            app:cameraFlash="off"
+            app:cameraAudio="on"
+            app:cameraFacing="back"
+            app:cameraGestureTap="autoFocus"
+            app:cameraGestureLongTap="none"
+            app:cameraGesturePinch="zoom"
+            app:cameraGestureScrollHorizontal="filterControl1"
+            app:cameraGestureScrollVertical="exposureCorrection"
+            app:cameraMode="picture"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:tabSelectedTextColor="@color/yellow"
+            app:tabRippleColor="@color/transparent"
+            app:tabTextColor="@color/white"
+            app:tabIndicatorHeight="0dp"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_opera"
@@ -83,23 +108,9 @@
         android:paddingTop="20dp"
         android:paddingBottom="20dp">
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tl_choose"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:tabSelectedTextColor="@color/yellow"
-            app:tabRippleColor="@color/transparent"
-            app:tabTextColor="@color/white"
-            app:tabIndicatorHeight="0dp"
-            />
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/tl_choose">
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/iv_back"

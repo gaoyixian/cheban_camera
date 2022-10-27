@@ -29,10 +29,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _onTackPhoto() async {
-    _cameraModel = await _chebanCameraPlugin.pickCamera(
-      sourceType: CameraTypeImage,
-      faceType: FaceTypeFront,
-    );
+    _cameraModel = await _chebanCameraPlugin.pickCamera();
     if (mounted) {
       setState(() {});
     }
