@@ -23,7 +23,7 @@ class CameraTabBar: UIView {
         pictureBtn = UIButton.init(type: .custom)
         pictureBtn?.frame = CGRect(x: 0, y: 0, width: frame.size.width/2, height: frame.size.height)
         pictureBtn?.setTitle("图片", for: .normal)
-        pictureBtn?.setTitleColor(UIColor.white, for: .normal)
+        pictureBtn?.setTitleColor(hexColor(hex: 0xFFE06A), for: .normal)
         pictureBtn?.titleLabel?.font = UIFont.systemFont(ofSize: 15*RATE)
         pictureBtn?.addTarget(self, action: #selector(pictureAction), for: .touchUpInside)
         self.addSubview(pictureBtn!)

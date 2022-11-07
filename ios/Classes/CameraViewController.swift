@@ -225,12 +225,12 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
         cameraManager.cameraOutputMode = cameraManager.cameraOutputMode == CameraOutputMode.videoWithMic ? CameraOutputMode.stillImage : CameraOutputMode.videoWithMic
         switch cameraManager.cameraOutputMode {
             case .stillImage:
-            cameraTabBar?.pictureBtn?.setTitleColor(UIColor.white, for: .normal)
+            cameraTabBar?.pictureBtn?.setTitleColor(hexColor(hex: 0xFFE06A), for: .normal)
             cameraTabBar?.videoBtn?.setTitleColor(hexColor(hex: 0x90FFFFFF), for: .normal)
             updateTakeView(color: UIColor.white, width: 34*RATE, radius: 17*RATE)
             case .videoWithMic, .videoOnly:
             cameraTabBar?.pictureBtn?.setTitleColor(hexColor(hex: 0x90FFFFFF), for: .normal)
-            cameraTabBar?.videoBtn?.setTitleColor(UIColor.white, for: .normal)
+            cameraTabBar?.videoBtn?.setTitleColor(hexColor(hex: 0xFFE06A), for: .normal)
             updateTakeView(color: hexColor(hex: 0xFF4747), width: 34*RATE, radius: 17*RATE)
         }
     }
