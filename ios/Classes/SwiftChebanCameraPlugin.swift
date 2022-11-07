@@ -2,7 +2,8 @@ import Flutter
 import UIKit
 import AVFoundation
 
-public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+//UIImagePickerControllerDelegate, UINavigationControllerDelegate
+public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cheban_camera", binaryMessenger: registrar.messenger())
     let instance = SwiftChebanCameraPlugin()
@@ -51,93 +52,93 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
       }
   }
     
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        print("拿到数据")
-        let mediaType = info[.mediaType] as! String
-        if (mediaType  == "public.image") {
-            var image = info[.originalImage] as! UIImage
-            if (image.imageOrientation != .up) {
-                UIGraphicsBeginImageContext(image.size)
-                image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
-                image = UIGraphicsGetImageFromCurrentImageContext()!
-                UIGraphicsEndImageContext()
-            }
-            let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
-            do {
-                try image.pngData()?.write(to: URL(fileURLWithPath: path))
-//                flutterResult!([
-//                    "width": Int(image.size.width),
-//                    "height": Int(image.size.height),
-//                    "type": 1,
-//                    "origin_file_path": path,
-//                    "thumbnail_file_path": "",
-//                ])
-            } catch {
-                print("写入文件失败")
-            }
-            UIImageWriteToSavedPhotosAlbum(image, self, #selector(save(image:didFinishSavingWithError:contextInfo:)), nil)
-        } else {
-            let videoUrl = info[.mediaURL] as! URL
-            let image = thumbnailImageForVideo(videoURL: videoUrl)
-            if (image != nil) {
-                let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
-                do {
-                    try image!.pngData()?.write(to: URL(fileURLWithPath: path))
-//                    flutterResult!([
-//                        "width": Int(image!.size.width),
-//                        "height": Int(image!.size.height),
-//                        "type": 2,
-//                        "origin_file_path": videoUrl.path,
-//                        "thumbnail_file_path": path,
-//                    ])
-                } catch {
-                    print("写入文件失败")
-                }
-            }
-            
-            if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(videoUrl.path)) {
-                UISaveVideoAtPathToSavedPhotosAlbum(videoUrl.path, self, #selector(save(path:didFinishSavingWithError:contextInfo:)), nil);//保存视频到相簿
-            }
-        }
-        picker.dismiss(animated: true)
-    }
-    
-    @objc func save(image:UIImage, didFinishSavingWithError:NSError?,contextInfo:AnyObject) {
-        if (didFinishSavingWithError != nil) {
-            print("保存相册失败")
-        }
-    }
-    
-    @objc func save(path: String, didFinishSavingWithError:NSError?,contextInfo:AnyObject) {
-        if (didFinishSavingWithError != nil) {
-            print("保存相册失败")
-        }
-    }
-    
-    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true)
-    }
-    
-    //当前相机是否可用
-    func isAvailable() -> Bool {
-        return UIImagePickerController.isSourceTypeAvailable(.camera)
-    }
-    
-    //获取视频封面
-    func thumbnailImageForVideo(videoURL: URL) -> UIImage? {
-            let aset = AVURLAsset(url: videoURL, options: nil)
-            let assetImg = AVAssetImageGenerator(asset: aset)
-            assetImg.appliesPreferredTrackTransform = true
-            assetImg.apertureMode = AVAssetImageGenerator.ApertureMode.encodedPixels
-            do{
-                let cgimgref = try assetImg.copyCGImage(at: CMTime(seconds: 0, preferredTimescale: 50), actualTime: nil)
-                return UIImage(cgImage: cgimgref)
-            }catch{
-                return nil
-            }
-        }
-    
- 
+//    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//        print("拿到数据")
+//        let mediaType = info[.mediaType] as! String
+//        if (mediaType  == "public.image") {
+//            var image = info[.originalImage] as! UIImage
+//            if (image.imageOrientation != .up) {
+//                UIGraphicsBeginImageContext(image.size)
+//                image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
+//                image = UIGraphicsGetImageFromCurrentImageContext()!
+//                UIGraphicsEndImageContext()
+//            }
+//            let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+//            do {
+//                try image.pngData()?.write(to: URL(fileURLWithPath: path))
+////                flutterResult!([
+////                    "width": Int(image.size.width),
+////                    "height": Int(image.size.height),
+////                    "type": 1,
+////                    "origin_file_path": path,
+////                    "thumbnail_file_path": "",
+////                ])
+//            } catch {
+//                print("写入文件失败")
+//            }
+//            UIImageWriteToSavedPhotosAlbum(image, self, #selector(save(image:didFinishSavingWithError:contextInfo:)), nil)
+//        } else {
+//            let videoUrl = info[.mediaURL] as! URL
+//            let image = thumbnailImageForVideo(videoURL: videoUrl)
+//            if (image != nil) {
+//                let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+//                do {
+//                    try image!.pngData()?.write(to: URL(fileURLWithPath: path))
+////                    flutterResult!([
+////                        "width": Int(image!.size.width),
+////                        "height": Int(image!.size.height),
+////                        "type": 2,
+////                        "origin_file_path": videoUrl.path,
+////                        "thumbnail_file_path": path,
+////                    ])
+//                } catch {
+//                    print("写入文件失败")
+//                }
+//            }
+//
+//            if (UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(videoUrl.path)) {
+//                UISaveVideoAtPathToSavedPhotosAlbum(videoUrl.path, self, #selector(save(path:didFinishSavingWithError:contextInfo:)), nil);//保存视频到相簿
+//            }
+//        }
+//        picker.dismiss(animated: true)
+//    }
+//
+//    @objc func save(image:UIImage, didFinishSavingWithError:NSError?,contextInfo:AnyObject) {
+//        if (didFinishSavingWithError != nil) {
+//            print("保存相册失败")
+//        }
+//    }
+//
+//    @objc func save(path: String, didFinishSavingWithError:NSError?,contextInfo:AnyObject) {
+//        if (didFinishSavingWithError != nil) {
+//            print("保存相册失败")
+//        }
+//    }
+//
+//    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//        picker.dismiss(animated: true)
+//    }
+//
+//    //当前相机是否可用
+//    func isAvailable() -> Bool {
+//        return UIImagePickerController.isSourceTypeAvailable(.camera)
+//    }
+//
+//    //获取视频封面
+//    func thumbnailImageForVideo(videoURL: URL) -> UIImage? {
+//            let aset = AVURLAsset(url: videoURL, options: nil)
+//            let assetImg = AVAssetImageGenerator(asset: aset)
+//            assetImg.appliesPreferredTrackTransform = true
+//            assetImg.apertureMode = AVAssetImageGenerator.ApertureMode.encodedPixels
+//            do{
+//                let cgimgref = try assetImg.copyCGImage(at: CMTime(seconds: 0, preferredTimescale: 50), actualTime: nil)
+//                return UIImage(cgImage: cgimgref)
+//            }catch{
+//                return nil
+//            }
+//        }
+//
+//
   
     
     

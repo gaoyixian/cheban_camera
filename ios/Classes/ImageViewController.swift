@@ -66,6 +66,12 @@ class ImageViewController: UIViewController {
     }
     
     @objc func useAction(sender: UIButton) {
+        if (image!.imageOrientation != .up) {
+            UIGraphicsBeginImageContext(image!.size)
+            image!.draw(in: CGRect(x: 0, y: 0, width: image!.size.width, height: image!.size.height))
+            image = UIGraphicsGetImageFromCurrentImageContext()!
+            UIGraphicsEndImageContext()
+        }
         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
         do {
             try image!.pngData()?.write(to: URL(fileURLWithPath: path))
