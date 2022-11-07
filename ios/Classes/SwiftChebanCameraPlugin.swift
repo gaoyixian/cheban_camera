@@ -9,39 +9,45 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
- var flutterResult : FlutterResult?
-    
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       if (call.method == "takePhotoAndVideo") {
-          flutterResult = result
           let dict = call.arguments as! NSDictionary
           let sourceType = dict["source_type"] as! Int
           let faceType = dict["face_type"] as! Int
-          if (isAvailable()) {
-              let mediaTypeArr: [String]? = UIImagePickerController.availableMediaTypes(for: .camera)
-              if (mediaTypeArr != nil) {
-                  let sourceArray = NSMutableArray.init()
-                  for item in mediaTypeArr! {
-                      if (item == "public.image" && sourceType != 2) {
-                          sourceArray.add(item)
-                      } else if (item == "public.movie" && sourceType != 1) {
-                          sourceArray.add(item)
-                      }
-                  }
-                  if (sourceArray.count > 0) {
-                      let pickerControl = UIImagePickerController()
-                      pickerControl.sourceType = .camera
-                      pickerControl.mediaTypes = sourceArray as! [String]
-                      if (faceType == 2) {
-                          pickerControl.cameraDevice = .front
-                      }
-                      pickerControl.delegate = self
-                      pickerControl.videoMaximumDuration = 15
-                      pickerControl.videoQuality = .typeHigh
-                      UIApplication.shared.keyWindow!.rootViewController!.present(pickerControl, animated: true)
-                  }
-              }
-          }
+          
+          let cameraVC = CameraViewController.init()
+          cameraVC.flutterResult = result
+          cameraVC.sourceType = sourceType
+          cameraVC.faceType = faceType
+          cameraVC.modalPresentationStyle = .fullScreen
+          UIApplication.shared.keyWindow!.rootViewController!.present(cameraVC, animated: true)
+//
+//
+//          if (isAvailable()) {
+//              let mediaTypeArr: [String]? = UIImagePickerController.availableMediaTypes(for: .camera)
+//              if (mediaTypeArr != nil) {
+//                  let sourceArray = NSMutableArray.init()
+//                  for item in mediaTypeArr! {
+//                      if (item == "public.image" && sourceType != 2) {
+//                          sourceArray.add(item)
+//                      } else if (item == "public.movie" && sourceType != 1) {
+//                          sourceArray.add(item)
+//                      }
+//                  }
+//                  if (sourceArray.count > 0) {
+//                      let pickerControl = UIImagePickerController()
+//                      pickerControl.sourceType = .camera
+//                      pickerControl.mediaTypes = sourceArray as! [String]
+//                      if (faceType == 2) {
+//                          pickerControl.cameraDevice = .front
+//                      }
+//                      pickerControl.delegate = self
+//                      pickerControl.videoMaximumDuration = 15
+//                      pickerControl.videoQuality = .typeHigh
+//                      UIApplication.shared.keyWindow!.rootViewController!.present(pickerControl, animated: true)
+//                  }
+//              }
+//          }
       }
   }
     
@@ -59,13 +65,13 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
             let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
             do {
                 try image.pngData()?.write(to: URL(fileURLWithPath: path))
-                flutterResult!([
-                    "width": Int(image.size.width),
-                    "height": Int(image.size.height),
-                    "type": 1,
-                    "origin_file_path": path,
-                    "thumbnail_file_path": "",
-                ])
+//                flutterResult!([
+//                    "width": Int(image.size.width),
+//                    "height": Int(image.size.height),
+//                    "type": 1,
+//                    "origin_file_path": path,
+//                    "thumbnail_file_path": "",
+//                ])
             } catch {
                 print("写入文件失败")
             }
@@ -77,13 +83,13 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin , UIImagePickerCon
                 let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                 do {
                     try image!.pngData()?.write(to: URL(fileURLWithPath: path))
-                    flutterResult!([
-                        "width": Int(image!.size.width),
-                        "height": Int(image!.size.height),
-                        "type": 2,
-                        "origin_file_path": videoUrl.path,
-                        "thumbnail_file_path": path,
-                    ])
+//                    flutterResult!([
+//                        "width": Int(image!.size.width),
+//                        "height": Int(image!.size.height),
+//                        "type": 2,
+//                        "origin_file_path": videoUrl.path,
+//                        "thumbnail_file_path": path,
+//                    ])
                 } catch {
                     print("写入文件失败")
                 }
