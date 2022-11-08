@@ -845,7 +845,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     
     open func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
         if error != nil {
-            if (error!.localizedDescription == "Recording Stopped") {
+            if (outputFileURL.absoluteString.count > 0) {
                 if (movieOutput != nil) {
                     videoCompletion = nil
                     cameraDelegate?.isRecordEndTime(outputFileURL: outputFileURL)
