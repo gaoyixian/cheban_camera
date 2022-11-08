@@ -47,7 +47,7 @@ class VideoViewController: UIViewController {
         
         let useBtn = UIButton.init(type: .custom)
         useBtn.frame = CGRect(x: SCREEN_WIDE - 96*RATE, y: SCREEN_HEIGHT - 50*RATE - safeAreaBottom(), width: 80*RATE, height: 30*RATE)
-        useBtn.setTitle("使用照片", for: .normal)
+        useBtn.setTitle("使用视频", for: .normal)
         useBtn.setTitleColor(UIColor.white, for: .normal)
         useBtn.titleLabel?.font = UIFont.systemFont(ofSize: 17*RATE)
         useBtn.contentHorizontalAlignment = .right
