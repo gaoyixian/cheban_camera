@@ -1238,7 +1238,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     fileprivate func _createMovieOutput() {
         
         let newMovieOutput = AVCaptureMovieFileOutput()
-        newMovieOutput.maxRecordedDuration = CMTime(seconds: 15, preferredTimescale: 1)
+        newMovieOutput.maxRecordedDuration = CMTime(seconds: 15.5, preferredTimescale: 1)
         newMovieOutput.movieFragmentInterval = CMTime.invalid
 
         movieOutput = newMovieOutput
