@@ -8,9 +8,12 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -74,7 +77,8 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
                 finish()
             }
             R.id.tv_use_video -> {
-                saveVideoToSystemAlbum(videoResult!!.file.path)
+                saveFileToGallery(videoResult!!.file.path, null)
+                //saveVideoToSystemAlbum(videoResult!!.file.path)
                 val mMMR = MediaMetadataRetriever()
                 mMMR.setDataSource(this, Uri.fromFile(videoResult!!.file))
                 val bmp = mMMR.frameAtTime
@@ -114,6 +118,72 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
             playerImageView.setImageResource(R.mipmap.stop)
             videoView.start()
         }
+    }
+
+    private fun saveFileToGallery(filePath: String, name: String?): Boolean {
+        val context = applicationContext
+        return try {
+            val originalFile = File(filePath)
+            val fileUri = generateUri(originalFile.extension, name)
+
+            val outputStream = context?.contentResolver?.openOutputStream(fileUri)!!
+            val fileInputStream = FileInputStream(originalFile)
+
+            val buffer = ByteArray(10240)
+            var count = 0
+            while (fileInputStream.read(buffer).also { count = it } > 0) {
+                outputStream.write(buffer, 0, count)
+            }
+
+            outputStream.flush()
+            outputStream.close()
+            fileInputStream.close()
+
+            context!!.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri))
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun generateUri(extension: String = "", name: String? = null): Uri {
+        var fileName = name ?: System.currentTimeMillis().toString()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            var uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+            val values = ContentValues()
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            val mimeType = getMIMEType(extension)
+            if (!TextUtils.isEmpty(mimeType)) {
+                values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
+                if (mimeType!!.startsWith("video")) {
+                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES)
+                }
+            }
+            return applicationContext?.contentResolver?.insert(uri, values)!!
+        } else {
+            val storePath = Environment.getExternalStorageDirectory().absolutePath + File.separator + Environment.DIRECTORY_PICTURES
+            val appDir = File(storePath)
+            if (!appDir.exists()) {
+                appDir.mkdir()
+            }
+            if (extension.isNotEmpty()) {
+                fileName += (".$extension")
+            }
+            return Uri.fromFile(File(appDir, fileName))
+        }
+    }
+
+    private fun getMIMEType(extension: String): String? {
+        var type: String? = null;
+        if (!TextUtils.isEmpty(extension)) {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase())
+        }
+        return type
     }
 
     fun saveVideoToSystemAlbum(videoPath: String): Boolean {
