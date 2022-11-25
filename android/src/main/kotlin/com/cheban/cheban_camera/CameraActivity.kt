@@ -200,6 +200,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
                 cameraView.filter = filter.newInstance()
             }
             R.id.iv_back -> {
+                cameraView.destroy()
                 finish()
             }
             R.id.iv_switch -> {
