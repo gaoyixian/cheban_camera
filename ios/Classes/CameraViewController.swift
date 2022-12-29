@@ -153,7 +153,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     //相机配置设置
     func setupCameraManager()  {
         cameraManager.cameraDelegate = self
-        cameraManager.shouldEnableExposure = true
+        //cameraManager.shouldEnableExposure = true
         cameraManager.animateCameraDeviceChange = true
         cameraManager.writeFilesToPhoneLibrary = false
         cameraManager.animateShutter = true
