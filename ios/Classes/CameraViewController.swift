@@ -154,7 +154,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     func setupCameraManager()  {
         cameraManager.cameraDelegate = self
         //cameraManager.shouldEnableExposure = true
-        cameraManager.animateCameraDeviceChange = true
+        cameraManager.shouldKeepViewAtOrientationChanges = true
         cameraManager.writeFilesToPhoneLibrary = false
         cameraManager.animateShutter = true
         if (faceType == 1) {
