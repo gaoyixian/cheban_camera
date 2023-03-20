@@ -81,6 +81,7 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
                 //saveVideoToSystemAlbum(videoResult!!.file.path)
                 val mMMR = MediaMetadataRetriever()
                 mMMR.setDataSource(this, Uri.fromFile(videoResult!!.file))
+                val mDuration = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt()?.div(1000)
                 val bmp = mMMR.frameAtTime
                 if (bmp != null) {
                     val byteArrayOutputStream = ByteArrayOutputStream()
@@ -95,7 +96,7 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
                             intent.putExtra("type", 2)
                             intent.putExtra("origin_file_path", videoResult!!.file.path)
                             intent.putExtra("thumbnail_file_path", file.path)
-                            intent.putExtra("duration", getLocalDuration(file.path))
+                            intent.putExtra("duration", mDuration)
                             setResult(10001, intent)
                             finish()
                         } else {
@@ -109,12 +110,6 @@ class VideoPreviewActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
-    }
-
-    private fun getLocalDuration(path: String): Int? {
-        val mmr = MediaMetadataRetriever()
-        mmr.setDataSource(path)
-        return mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt()?.div(1000)
     }
 
     private fun playVideo() {
