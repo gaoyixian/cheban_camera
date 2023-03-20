@@ -11,7 +11,7 @@ class CameraModel {
   int type = CameraTypeImage;
   String origin_file_path = '';
   String thumbnail_file_path = '';
-  int duration = 0;
+  int? duration;
 
   CameraModel.fromJson(Map<String, dynamic> json) {
     width = json['width'];
