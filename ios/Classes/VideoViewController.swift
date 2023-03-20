@@ -110,6 +110,7 @@ class VideoViewController: UIViewController {
         let image = thumbnailImageForVideo(videoURL: videoURL!)
         if (image != nil) {
             let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+            let duration = totalSecondForVideo(videoURL: videoURL!)
             do {
                 try image!.pngData()?.write(to: URL(fileURLWithPath: path))
                     flutterResult!([
@@ -118,6 +119,7 @@ class VideoViewController: UIViewController {
                         "type": 2,
                         "origin_file_path": videoURL!.path,
                         "thumbnail_file_path": path,
+                        "duration": duration,
                     ])
             } catch {
                 print("写入文件失败")
@@ -129,6 +131,12 @@ class VideoViewController: UIViewController {
         }
         self.dismiss(animated: false)
         self.videoViewBackDelegate?.videoViewCallBack()
+    }
+    
+    func totalSecondForVideo(videoURL: URL) -> Int {
+        let aset = AVURLAsset(url: videoURL, options: nil)
+        let time : CMTime = aset.duration
+        return Int(floor(CMTimeGetSeconds(time)))
     }
     
     //获取视频封面
@@ -163,3 +171,4 @@ class VideoViewController: UIViewController {
     */
 
 }
+

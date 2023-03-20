@@ -297,6 +297,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, TabLayout.OnTa
                     "width" to data.getIntExtra("width", 0),
                     "height" to data.getIntExtra("height", 0),
                     "type" to data.getIntExtra("type", 0),
+                    "duration" to data.getIntExtra("duration", 0),
                 )
                 if (originPath != null) {
                     dict["origin_file_path"] = originPath
