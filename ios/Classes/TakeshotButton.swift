@@ -7,19 +7,27 @@
 
 import Foundation
 
-class TakeshotButton: UIView {
+class TakeshotButton: UIView, CAAnimationDelegate {
     
-    lazy var touchControl: UIControl = {
-        $0.frame = CGRect(x: 0, y: 0, width: self.bounds.width, height: self.bounds.height)
+    var takeshotShouldCapture: () -> Void = {}
+    var takeshotShouldRecordMovie: (_ isStart: Bool) -> Void = { _ in }
+    var takeshotUpdateRecordMovie: (_ countdown: Int) -> Void = { _ in }
+    
+    var timer : Timer?
+    var countdown : Int = 0
+    
+    lazy var circleProgressView: CircleProgressView = {
+        $0.animationDelegate = self
         $0.translatesAutoresizingMaskIntoConstraints = false
-        addSubview($0);
-        return $0;
-    }(UIControl())
-      
+        $0.isUserInteractionEnabled = true
+        addSubview($0)
+        return $0
+    }(CircleProgressView())
+              
     lazy var takeshotTransformView: UIView = {
-        $0.frame = CGRect(x: 6.fixed, y: 6.fixed, width: 60.fixed, height: 60.fixed)
-        $0.layer.cornerRadius = 30.fixed
+        $0.layer.cornerRadius = 28.fixed
         $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.isUserInteractionEnabled = true
         $0.backgroundColor = .white
         addSubview($0)
         return $0
@@ -28,26 +36,116 @@ class TakeshotButton: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = true
-        layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
-        layer.borderWidth = 6.fixed
-        layer.cornerRadius = 36.fixed
-        layer.masksToBounds = true
         NSLayoutConstraint.activate([
-            takeshotTransformView.topAnchor.constraint(equalTo: self.topAnchor, constant: 6.fixed),
-            takeshotTransformView.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 6.fixed),
-            takeshotTransformView.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -6.fixed),
-            takeshotTransformView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -6.fixed),
-            touchControl.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 1.0),
-            touchControl.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 1.0),
+            circleProgressView.widthAnchor.constraint(equalTo: self.widthAnchor),
+            circleProgressView.heightAnchor.constraint(equalTo: self.heightAnchor),
+            takeshotTransformView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            takeshotTransformView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            takeshotTransformView.widthAnchor.constraint(equalToConstant: 56.fixed),
+            takeshotTransformView.heightAnchor.constraint(equalToConstant: 56.fixed)
         ])
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(onTakeshotPressed))
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(onTakeshotLongPressed))
+        addGestureRecognizer(tap)
+        addGestureRecognizer(longPress)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func addTarget(_ target: Any, action: Selector) {
-        touchControl.addTarget(target, action: action, for: .touchUpInside);
+    func fireTimer() {
+        invalidTimer()
+        countdown = 0
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(onTimerUpdate), userInfo: nil, repeats: true)
+        timer?.fire()
+    }
+
+    func invalidTimer() {
+        print("invalidTimer")
+        timer?.invalidate()
+        timer = nil
     }
     
+    func updateTransformView(_ animated: Bool) {
+        NSLayoutConstraint.deactivate(takeshotTransformView.constraints)
+        if (animated) {
+            takeshotTransformView.layer.cornerRadius = 8.fixed
+            NSLayoutConstraint.activate([
+                takeshotTransformView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                takeshotTransformView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+                takeshotTransformView.widthAnchor.constraint(equalToConstant: 16.fixed),
+                takeshotTransformView.heightAnchor.constraint(equalToConstant: 16.fixed)
+            ])
+        } else {
+            takeshotTransformView.layer.cornerRadius = 28.fixed
+            NSLayoutConstraint.activate([
+                takeshotTransformView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+                takeshotTransformView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+                takeshotTransformView.widthAnchor.constraint(equalToConstant: 56.fixed),
+                takeshotTransformView.heightAnchor.constraint(equalToConstant: 56.fixed)
+            ])
+        }
+    }
+        
+    @objc func onTakeshotPressed(_ recognizer: UITapGestureRecognizer) {
+        takeshotShouldCapture()
+    }
+    
+    @objc func onTakeshotLongPressed(_ recognizer: UILongPressGestureRecognizer) {
+        switch recognizer.state {
+        case .began:
+            circleProgressView.startAnimation()
+            updateTransformView(true)
+            fireTimer()
+            takeshotShouldRecordMovie(true)
+            break
+        case .changed:
+            break
+        case .ended:
+            circleProgressView.stopAnimation()
+            updateTransformView(false)
+            invalidTimer()
+            takeshotShouldRecordMovie(false)
+            break
+        case .cancelled:
+            circleProgressView.stopAnimation()
+            updateTransformView(false)
+            invalidTimer()
+            takeshotShouldRecordMovie(false)
+            break
+        case .possible:
+            break
+        case .failed:
+            circleProgressView.stopAnimation()
+            updateTransformView(false)
+            invalidTimer()
+            takeshotShouldRecordMovie(false)
+            break
+        @unknown default:
+            break
+        }
+    }
+    
+    @objc func onTimerUpdate(sender: Timer) {
+        print(countdown)
+        takeshotUpdateRecordMovie(countdown)
+        countdown = countdown + 1
+    }
+    
+    func animationDidStart(_ anim: CAAnimation) {
+        
+    }
+    
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        circleProgressView.stopAnimation()
+        updateTransformView(false)
+        takeshotShouldRecordMovie(false)
+        invalidTimer()
+    }
+    
+    deinit {
+        invalidTimer()
+    }
 }
