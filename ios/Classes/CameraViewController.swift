@@ -16,142 +16,156 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     var faceType: Int = 1
     
     let cameraManager = CameraManager()
-    var flashModeImageView: UIImageView?
     var cameraTabBar: CameraTabBar?
-    var cameraView: UIView?
-    var askForPermissionsLabel: UILabel?
-    var takeBarView: UIView?
-    var takeView : UIView?
     var isRecording = false
     
-    var countDownLbl: UILabel?
     var countTimer : Timer?
     var totalCount : Int = 0
     
+    var device = AVCaptureDevice.default(for: .video)
+    
+    /// 预览视图
+    lazy var previewLayer: UIView = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview($0)
+        return $0
+    }(UIView())
+    
+    /// 闪光灯模式
+    lazy var flashModeBar: FlashModeBar = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.alpha = 0
+        $0.selectFlashModeHandler = { [weak self] (flashMode) -> Void in
+            guard let self = self else { return }
+            if let device = self.device {
+                try? device.lockForConfiguration()
+                if (device.hasTorch) {
+                    device.torchMode = .off
+                }
+                device.unlockForConfiguration()
+            }
+
+            switch flashMode {
+            case .off:
+                self.cameraManager.flashMode = CameraFlashMode.off
+                self.flashButton.setImage(sourceImage(name: "flash_off"), for: .normal)
+            case .on:
+                self.cameraManager.flashMode = CameraFlashMode.on
+                self.flashButton.setImage(sourceImage(name: "flash_on"), for: .normal)
+            case .auto:
+                self.cameraManager.flashMode = CameraFlashMode.auto
+                self.flashButton.setImage(sourceImage(name: "flash_auto"), for: .normal)
+            case .open:
+                if let device = self.device {
+                    try? device.lockForConfiguration()
+                    if (device.hasTorch) {
+                        device.torchMode = .on
+                    }
+                    device.unlockForConfiguration()
+                }
+            }
+            self.switchFlashMode()
+        }
+        self.view.addSubview($0)
+        return $0
+    }(FlashModeBar())
+    
+    /// 闪光灯按钮
+    lazy var flashButton: UIButton = {
+        $0.setImage(sourceImage(name: "ic_camera_flash"), for: .normal)
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.isUserInteractionEnabled = cameraManager.hasFlash;
+        $0.addTarget(self, action: #selector(switchFlashMode), for: .touchUpInside)
+        self.view.addSubview($0)
+        return $0
+    }(UIButton(type: .custom))
+    
+    /// 切换摄像头按钮
+    lazy var switchCameraButton: UIButton = {
+        $0.setImage(sourceImage(name: "switch_camera"), for: .normal)
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.addTarget(self, action: #selector(changeCameraDevice), for: .touchUpInside)
+        self.view.addSubview($0)
+        return $0
+    }(UIButton(type: .custom))
+    
+    /// 关闭按钮
+    lazy var closeButton: UIButton = {
+        $0.setImage(sourceImage(name: "ic_close"), for: .normal)
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.addTarget(self, action: #selector(backAction), for: .touchUpInside)
+        self.view.addSubview($0)
+        return $0
+    }(UIButton(type: .custom))
+    
+    /// 拍照按钮
+    lazy var takeshotButton: TakeshotButton = {
+        $0.addTarget(self, action: #selector(recordButtonTapped))
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview($0)
+        return $0
+    }(TakeshotButton())
+    
+    /// 中间提示雨（包括录像时间提示）
+    lazy var behaviorLabel: UILabel = {
+        $0.text = "轻触拍照，按住摄像"
+        $0.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        $0.textColor = .white
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview($0)
+        return $0
+    }(UILabel())
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupCameraManager()
-        initViews()
-    }
-    
-    func initViews() {
         self.view.backgroundColor = UIColor.black
-        //顶部区域
-        let headerView = UIView.init(frame: CGRect(x: 0, y: safeAreaTop(), width: SCREEN_WIDE, height: 30*RATE))
-        self.view.addSubview(headerView)
-        
-        flashModeImageView = UIImageView.init(frame: CGRect(x: 15*RATE, y: 0, width: 24*RATE, height: headerView.frame.size.height))
-        flashModeImageView?.image = sourceImage(name: "flash_off")
-        flashModeImageView?.isUserInteractionEnabled = true
-        flashModeImageView?.contentMode = .scaleAspectFit
-        headerView.addSubview(flashModeImageView!)
-        
-        countDownLbl = UILabel.init(frame: CGRect(x: SCREEN_WIDE - 95*RATE, y: 0, width: 80*RATE, height: 24*RATE))
-        countDownLbl?.textColor = UIColor.white
-        countDownLbl?.font = UIFont.systemFont(ofSize: 15*RATE)
-        countDownLbl?.text = "00:00:00"
-        countDownLbl?.isHidden = true
-        countDownLbl?.textAlignment = .center
-        countDownLbl?.backgroundColor = hexColor(hex: 0xFF7474)
-        countDownLbl?.layer.cornerRadius = 4*RATE
-        countDownLbl?.layer.masksToBounds = true
-        headerView.addSubview(countDownLbl!)
-        
-        if cameraManager.hasFlash {
-            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(changeFlashMode))
-            flashModeImageView?.addGestureRecognizer(tapGesture)
-        }
-        
-//        outputImageView = UIImageView.init(frame: CGRect(x: flashModeImageView!.frame.origin.x + 60, y: 0, width: 30, height: 60))
-//        outputImageView?.image = UIImage(named: "output_video")
-//        outputImageView?.isUserInteractionEnabled = true
-//        outputImageView?.contentMode = .scaleAspectFit
-//        headerView.addSubview(outputImageView!)
-//        let outputGesture = UITapGestureRecognizer(target: self, action: #selector(outputModeButtonTapped))
-//        outputImageView?.addGestureRecognizer(outputGesture)
-        
-        //底部区域
-        let footerView = UIView.init(frame: CGRect(x: 0, y: SCREEN_HEIGHT - safeAreaBottom() - 100*RATE, width: SCREEN_WIDE, height: 100*RATE))
-        self.view.addSubview(footerView)
-        
-        //拍照/录像按钮
-        takeBarView = UIView.init(frame: CGRect(x: (SCREEN_WIDE - 60*RATE)/2, y: 20*RATE, width: 60*RATE, height: 60*RATE))
-        takeBarView?.layer.borderWidth = 6*RATE
-        takeBarView?.layer.borderColor = UIColor.white.cgColor
-        takeBarView?.layer.cornerRadius = 30*RATE
-        takeBarView?.layer.masksToBounds = true
-        footerView.addSubview(takeBarView!)
-        
-        takeView = UIView.init(frame: CGRect(x: 0, y: 0, width: 34*RATE, height: 34*RATE))
-        takeView?.center = CGPoint(x: takeBarView!.frame.size.width/2, y: takeBarView!.frame.size.height/2)
-        if (sourceType == 2) {
-            takeView?.backgroundColor = hexColor(hex: 0xFF4747)
-        } else {
-            takeView?.backgroundColor = UIColor.white
-        }
-        takeView?.layer.cornerRadius = 17*RATE
-        takeView?.layer.masksToBounds = true
-        takeBarView?.addSubview(takeView!)
-        
-        let cameraButton = UIButton.init(type: .custom)
-        cameraButton.frame = CGRect(x: 0, y: 0, width: takeBarView!.frame.size.width, height: takeBarView!.frame.size.height)
-        cameraButton.addTarget(self, action: #selector(recordButtonTapped), for: .touchUpInside)
-        takeBarView?.addSubview(cameraButton)
-        
-        
-        //取消按钮
-        let cancelImageView = UIImageView.init(frame: CGRect(x: (SCREEN_WIDE / 2 - 30*RATE) / 2 - 25*RATE, y: 25*RATE, width: 50*RATE, height: 50*RATE))
-        cancelImageView.image = sourceImage(name: "ic_close")
-        cancelImageView.isUserInteractionEnabled = true
-        footerView.addSubview(cancelImageView)
-        let backGesture = UITapGestureRecognizer(target: self, action: #selector(backAction))
-        cancelImageView.addGestureRecognizer(backGesture)
-        
-        //切换前后摄像头按钮
-        let switchImageView = UIImageView.init(frame: CGRect(x: (SCREEN_WIDE / 2 - 30*RATE) / 2 + 5*RATE + SCREEN_WIDE / 2, y: 25*RATE, width: 50*RATE, height: 50*RATE))
-        switchImageView.image = sourceImage(name: "switch_camera")
-        switchImageView.isUserInteractionEnabled = true
-        footerView.addSubview(switchImageView)
-        let switchGesture = UITapGestureRecognizer(target: self, action: #selector(changeCameraDevice))
-        switchImageView.addGestureRecognizer(switchGesture)
-        
-        //预览界面
-        cameraView = UIView.init(frame: CGRect(x: 0, y: headerView.frame.origin.y+headerView.frame.size.height, width: SCREEN_WIDE, height: SCREEN_HEIGHT - headerView.frame.origin.y - headerView.frame.size.height - footerView.frame.size.height - safeAreaBottom()))
-        cameraView?.backgroundColor = UIColor.black
-        self.view.addSubview(cameraView!)
-        
-        //切换拍照/录像
-        if (sourceType == 3) {
-            cameraTabBar = CameraTabBar.init(frame: CGRect(x: (SCREEN_WIDE - 100*RATE) / 2, y: cameraView!.frame.size.height + cameraView!.frame.origin.y - 50*RATE, width: 100*RATE, height: 50*RATE))
-            self.view.addSubview(cameraTabBar!)
-            cameraTabBar!.cameraTabBarBlock = { index in
-                self.outputModeButtonTapped(index: index)
-            }
-        }
-        askForPermissionsLabel = UILabel.init(frame: CGRect(x: cameraView!.frame.origin.x, y: cameraView!.frame.origin.y, width: cameraView!.frame.size.width, height: cameraView!.frame.size.height))
-        askForPermissionsLabel?.text = "点击此处打开相机"
-        askForPermissionsLabel?.textColor = UIColor.white
-        askForPermissionsLabel?.textAlignment = .center
-        askForPermissionsLabel?.isHidden = true
-        askForPermissionsLabel?.isUserInteractionEnabled = true
-        askForPermissionsLabel?.font = UIFont.systemFont(ofSize: 20)
-        self.view.addSubview(askForPermissionsLabel!)
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(askForCameraPermissions))
-        askForPermissionsLabel?.addGestureRecognizer(tapGesture)
-        
-        let currentCameraState = cameraManager.currentCameraStatus()
-        if currentCameraState == .notDetermined {
-            askForPermissionsLabel?.isHidden = false
-        } else if currentCameraState == .ready {
-            addCameraToView()
-        } else {
-            askForPermissionsLabel?.isHidden = false
-        }
+        setupConstraints()
+        setupCamera()
+        startAnimatedBehaviorHidden()
     }
     
-    //相机配置设置
-    func setupCameraManager()  {
+    /// 初始化布局
+    func setupConstraints() {
+        NSLayoutConstraint.activate([
+            previewLayer.widthAnchor.constraint(equalTo: self.view.widthAnchor),
+            flashModeBar.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            flashModeBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 4.fixed),
+            flashModeBar.heightAnchor.constraint(equalToConstant: 48.fixed),
+            flashModeBar.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 20.fixed),
+            flashModeBar.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -20.fixed),
+            previewLayer.heightAnchor.constraint(equalTo: self.view.heightAnchor),
+            flashButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 14.fixed),
+            flashButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -34.fixed),
+            flashButton.widthAnchor.constraint(equalToConstant: 28.fixed),
+            flashButton.heightAnchor.constraint(equalToConstant: 28.fixed),
+            takeshotButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -32.fixed),
+            takeshotButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            takeshotButton.widthAnchor.constraint(equalToConstant: 72.fixed),
+            takeshotButton.heightAnchor.constraint(equalToConstant: 72.fixed),
+            closeButton.centerYAnchor.constraint(equalTo: takeshotButton.centerYAnchor),
+            closeButton.rightAnchor.constraint(equalTo: takeshotButton.leftAnchor, constant: -48.fixed),
+            switchCameraButton.leftAnchor.constraint(equalTo: takeshotButton.rightAnchor, constant: 48.fixed),
+            switchCameraButton.centerYAnchor.constraint(equalTo: takeshotButton.centerYAnchor),
+            closeButton.widthAnchor.constraint(equalToConstant: 48.fixed),
+            closeButton.heightAnchor.constraint(equalToConstant: 48.fixed),
+            switchCameraButton.widthAnchor.constraint(equalToConstant: 48.fixed),
+            switchCameraButton.heightAnchor.constraint(equalToConstant: 48.fixed),
+            behaviorLabel.bottomAnchor.constraint(equalTo: takeshotButton.topAnchor, constant: -42.fixed),
+            behaviorLabel.centerXAnchor.constraint(equalTo: takeshotButton.centerXAnchor),
+        ])
+//        //切换拍照/录像
+//        if (sourceType == 3) {
+//            cameraTabBar = CameraTabBar.init(frame: CGRect(x: (SCREEN_WIDE - 100*RATE) / 2, y: cameraView!.frame.size.height + cameraView!.frame.origin.y - 50*RATE, width: 100*RATE, height: 50*RATE))
+//            self.view.addSubview(cameraTabBar!)
+//            cameraTabBar!.cameraTabBarBlock = { index in
+//                self.outputModeButtonTapped(index: index)
+//            }
+//        }
+        
+    }
+    
+    /// 初始化相机
+    func setupCamera() {
         cameraManager.cameraDelegate = self
         //cameraManager.shouldEnableExposure = true
         cameraManager.shouldKeepViewAtOrientationChanges = true
@@ -171,24 +185,16 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
         cameraManager.shouldFlipFrontCameraImage = true
         cameraManager.videoStabilisationMode = .standard
         cameraManager.showAccessPermissionPopupAutomatically = false
-    }
-    
-    //相机添加到view
-    func addCameraToView() {
-        cameraManager.addPreviewLayerToView(cameraView!, newCameraOutputMode: cameraManager.cameraOutputMode)
-        cameraManager.showErrorBlock = { [weak self] (erTitle: String, erMessage: String) -> Void in
-            let alertController = UIAlertController(title: erTitle, message: erMessage, preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { (_) -> Void in }))
-            self?.present(alertController, animated: true, completion: nil)
-        }
-    }
-    
-    //权限申请
-    @objc func askForCameraPermissions(sender: UITapGestureRecognizer) {
-        cameraManager.askUserForCameraPermission { permissionGranted in
+        
+        cameraManager.askUserForCameraPermission { [weak self] permissionGranted in
+            guard let self = self else { return }
             if permissionGranted {
-                self.askForPermissionsLabel?.isHidden = true
-                self.addCameraToView()
+                self.cameraManager.addPreviewLayerToView(self.previewLayer, newCameraOutputMode: self.cameraManager.cameraOutputMode)
+                self.cameraManager.showErrorBlock = { (erTitle: String, erMessage: String) -> Void in
+                    let alertController = UIAlertController(title: erTitle, message: erMessage, preferredStyle: .alert)
+                    alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { (_) -> Void in }))
+                    self.present(alertController, animated: true, completion: nil)
+                }
             } else {
                 if #available(iOS 10.0, *) {
                     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -199,17 +205,22 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
         }
     }
     
-    //切换闪光灯
-    @objc func changeFlashMode(sender: UITapGestureRecognizer) {
-        switch cameraManager.changeFlashMode() {
-            case .off:
-                flashModeImageView?.image = sourceImage(name: "flash_off")
-            case .on:
-                flashModeImageView?.image = sourceImage(name: "flash_on")
-            case .auto:
-                flashModeImageView?.image = sourceImage(name: "flash_auto")
+    /// 隐藏提示文本
+    func startAnimatedBehaviorHidden() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: { () -> Void in
+            UIView.animate(withDuration: 0.25) {
+                self.behaviorLabel.alpha = 0.0;
+            }
+        })
+    }
+    
+    /// 点击切换闪光灯
+    @objc func switchFlashMode() {
+        UIView.animate(withDuration: 0.25) {
+            self.flashModeBar.alpha = self.flashModeBar.alpha == 1 ? 0 : 1;
         }
     }
+    
     
     //切换输出类型 拍照/录像
     @objc func outputModeButtonTapped(index: Int) {
@@ -248,14 +259,51 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                 switch result {
                     case .failure:  self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
                     case .success(let content):
-                    let validVC = ImageViewController.init()
-                    let capturedData = content.asData
-                    let capturedImage = UIImage(data: capturedData!)!
-                    validVC.image = capturedImage
-                    validVC.flutterResult = self.flutterResult
-                    validVC.modalPresentationStyle = .fullScreen
-                    validVC.imageViewBackDelegate = self
-                    self.present(validVC, animated: true)
+                    guard let image = content.asImage else {
+                        return
+                    }
+                    if (image.imageOrientation != .up) {
+                        UIGraphicsBeginImageContext(image.size)
+                        image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
+                        var drawImg = UIGraphicsGetImageFromCurrentImageContext()!
+                        UIGraphicsEndImageContext()
+                        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+                        do {
+                            try drawImg.pngData()?.write(to: URL(fileURLWithPath: path))
+                            self.flutterResult!([
+                                    "width": Int(image.size.width),
+                                    "height": Int(image.size.height),
+                                    "type": 1,
+                                    "origin_file_path": path,
+                                    "thumbnail_file_path": "",
+                                ])
+                        } catch {
+                            print("写入文件失败")
+                        }
+                    } else {
+                        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+                        do {
+                            try image.pngData()?.write(to: URL(fileURLWithPath: path))
+                            self.flutterResult!([
+                                    "width": Int(image.size.width),
+                                    "height": Int(image.size.height),
+                                    "type": 1,
+                                    "origin_file_path": path,
+                                    "thumbnail_file_path": "",
+                                ])
+                        } catch {
+                            print("写入文件失败")
+                        }
+                    }
+                    self.dismiss(animated: false)
+//                    let validVC = ImageViewController.init()
+//                    let capturedData = content.asData
+//                    let capturedImage = UIImage(data: capturedData!)!
+//                    validVC.image = capturedImage
+//                    validVC.flutterResult = self.flutterResult
+//                    validVC.modalPresentationStyle = .fullScreen
+//                    validVC.imageViewBackDelegate = self
+//                    self.present(validVC, animated: true)
                 }
             }
             break
@@ -270,7 +318,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                 cameraManager.stopVideoRecording { [self] (videoURL, error) -> Void in
                     updateTakeView(color: hexColor(hex: 0xFF4747), width: 34*RATE, radius: 17*RATE)
                     isRecording = false
-                    countDownLbl?.isHidden = true
                     if error != nil {
                         self.cameraManager.showErrorBlock("Error occurred", "Cannot save video.")
                     } else {
@@ -285,7 +332,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     func isRecordEndTime(outputFileURL: URL) {
         updateTakeView(color: hexColor(hex: 0xFF4747), width: 34*RATE, radius: 17*RATE)
         isRecording = false
-        countDownLbl?.isHidden = true
         jumpToVideo(outputFileURL: outputFileURL)
     }
     
@@ -300,23 +346,13 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     
     func createTimer() {
         closeTimer()
-        countDownLbl?.isHidden = false
         totalCount = 0
         countTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.countDownAction), userInfo: nil, repeats: true)
         countTimer!.fire()
     }
     
     @objc func countDownAction(sender: Timer) {
-        if totalCount == 15 {
-            countDownLbl?.text = "00:00:15"
-        } else {
-            totalCount += 1
-            if (totalCount < 10) {
-                countDownLbl?.text = "00:00:0" + String(totalCount)
-            } else {
-                countDownLbl?.text = "00:00:" + String(totalCount)
-            }
-        }
+
     }
     
     func closeTimer() {
@@ -325,11 +361,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     }
     
     func updateTakeView(color: UIColor, width: CGFloat, radius: CGFloat) {
-        takeView?.backgroundColor = color
-        takeView?.frame.size = CGSize(width: width, height: width)
-        takeView?.center = CGPoint(x: takeBarView!.frame.size.width/2, y: takeBarView!.frame.size.height/2)
-        takeView?.layer.cornerRadius = radius
-        takeView?.layer.masksToBounds = true
+        
     }
     
     func imageViewCallBack() {

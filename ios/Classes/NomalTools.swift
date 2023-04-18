@@ -59,4 +59,14 @@ func sourceImage(name: String) ->  UIImage{
     return UIImage.init(named: name, in: bundle, compatibleWith: nil)!
 }
 
+extension Double {
+    var fixed: Double {
+        return self * RATE;
+    }
+}
 
+extension Int {
+    var fixed: Double {
+        return Double(self) * RATE;
+    }
+}
