@@ -10,20 +10,18 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
     
-  static var cameraVC: CameraViewController?
-
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       if (call.method == "takePhotoAndVideo") {
           let dict = call.arguments as! NSDictionary
           let sourceType = dict["source_type"] as! Int
           let faceType = dict["face_type"] as! Int
           
-          SwiftChebanCameraPlugin.cameraVC = CameraViewController.init()
-          SwiftChebanCameraPlugin.cameraVC!.flutterResult = result
-          SwiftChebanCameraPlugin.cameraVC!.sourceType = sourceType
-          SwiftChebanCameraPlugin.cameraVC!.faceType = faceType
-          SwiftChebanCameraPlugin.cameraVC!.modalPresentationStyle = .fullScreen
-          UIApplication.shared.keyWindow!.rootViewController!.present(SwiftChebanCameraPlugin.cameraVC!, animated: true)
+          var cameraVC = CameraViewController.init()
+          cameraVC.flutterResult = result
+          cameraVC.sourceType = sourceType
+          cameraVC.faceType = faceType
+          cameraVC.modalPresentationStyle = .fullScreen
+          UIApplication.shared.keyWindow!.rootViewController!.present(cameraVC, animated: true)
 //
 //
 //          if (isAvailable()) {
@@ -51,10 +49,6 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
 //                  }
 //              }
 //          }
-      } else if (call.method == "dismiss") {
-          if (SwiftChebanCameraPlugin.cameraVC != nil) {
-              SwiftChebanCameraPlugin.cameraVC?.dismiss(animated: true)
-          }
       }
   }
     
