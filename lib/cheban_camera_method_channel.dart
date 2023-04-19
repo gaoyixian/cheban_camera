@@ -31,4 +31,9 @@ class MethodChannelChebanCamera extends ChebanCameraPlatform {
     }
     return null;
   }
+
+  @override
+  Future<dynamic> dimiss() async {
+    return methodChannel.invokeMethod('dismiss');
+  }
 }

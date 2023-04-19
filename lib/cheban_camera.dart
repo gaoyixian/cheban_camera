@@ -12,4 +12,8 @@ class ChebanCamera {
     return ChebanCameraPlatform.instance
         .pickCamera(sourceType: sourceType, faceType: faceType);
   }
+
+  Future<dynamic> dismiss() {
+    return ChebanCameraPlatform.instance.dimiss();
+  }
 }
