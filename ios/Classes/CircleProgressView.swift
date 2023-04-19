@@ -16,6 +16,8 @@ class CircleProgressView: UIView, CAAnimationDelegate {
     var progressLayer: CAShapeLayer!
     
     var animationDelegate: CAAnimationDelegate?
+    
+    var trackColor: UIColor = .white.withAlphaComponent(0.2)
         
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -28,7 +30,7 @@ class CircleProgressView: UIView, CAAnimationDelegate {
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         if (trackLayer == nil) {
-            trackLayer = buildLayer(.gray)
+            trackLayer = buildLayer(trackColor)
             let path = buildPath(1.0, trackLayer.lineWidth)
             trackLayer.path = path.cgPath
             trackLayer.strokeStart = 0

@@ -118,6 +118,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                 self.tipLabel.text = "00:00:" + String(countdown)
             }
         }
+        $0.sourceType = sourceType
         $0.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview($0)
         return $0

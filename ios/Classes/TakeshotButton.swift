@@ -15,11 +15,13 @@ class TakeshotButton: UIView, CAAnimationDelegate {
     
     var timer : Timer?
     var countdown : Int = 0
+    var sourceType: Int = 3
     
     lazy var circleProgressView: CircleProgressView = {
         $0.animationDelegate = self
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.isUserInteractionEnabled = true
+        $0.trackColor = sourceType == 1 ? .white : .white.withAlphaComponent(0.2)
         addSubview($0)
         return $0
     }(CircleProgressView())
@@ -94,6 +96,9 @@ class TakeshotButton: UIView, CAAnimationDelegate {
     }
     
     @objc func onTakeshotLongPressed(_ recognizer: UILongPressGestureRecognizer) {
+        if (sourceType == 1) {
+            return
+        }
         switch recognizer.state {
         case .began:
             circleProgressView.startAnimation()
