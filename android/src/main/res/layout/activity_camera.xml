@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,167 +8,126 @@
     android:background="@color/black"
     tools:context=".CameraActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.otaliastudios.cameraview.CameraView
+        android:id="@+id/camera"
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="match_parent"
+        android:keepScreenOn="true"
+        app:cameraAudio="on"
+        app:cameraEngine="camera1"
+        app:cameraExperimental="true"
+        app:cameraFacing="back"
+        app:cameraFlash="off"
+        app:cameraGestureLongTap="none"
+        app:cameraGesturePinch="zoom"
+        app:cameraGestureScrollHorizontal="filterControl1"
+        app:cameraGestureScrollVertical="exposureCorrection"
+        app:cameraGestureTap="autoFocus"
+        app:cameraGrid="off"
+        app:cameraMode="picture"
+        app:cameraPlaySounds="false"
+        app:cameraPreview="glSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-        <ImageView
-            android:id="@+id/iv_flash"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@mipmap/flash_off"
-            android:scaleType="fitXY"
-            android:layout_marginStart="15dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"/>
+    <ImageView
+        android:id="@+id/iv_flash"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@mipmap/flash_off"
+        android:scaleType="fitCenter"
+        android:layout_marginEnd="34dp"
+        android:layout_marginTop="14dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"/>
 
-        <ImageView
-            android:id="@+id/iv_beauty"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@mipmap/filter"
-            android:scaleType="fitXY"
-            android:layout_marginStart="15dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/iv_flash"/>
+    <ImageView
+        android:id="@+id/iv_back"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/close"
+        android:scaleType="fitCenter"
+        android:layout_alignTop="@+id/cl_capture"
+        android:layout_alignBottom="@id/cl_capture"
+        android:layout_toStartOf="@+id/cl_capture"
+        android:layout_marginEnd="48dp"/>
 
+    <RelativeLayout
+        android:id="@+id/cl_capture"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="32dp">
 
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="00:00:00"
-            android:gravity="center"
-            android:textSize="15sp"
-            android:visibility="gone"
-            android:textColor="@color/black"
-            android:background="@drawable/shape_4_corner_bg_red"
-            android:layout_marginEnd="15dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+        <View
+            android:id="@+id/v_capture"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/shape_27_corner_bg_white"
+            android:layout_centerInParent="true"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <com.otaliastudios.cameraview.CameraView
-            android:id="@+id/camera"
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress_circular"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:keepScreenOn="true"
-            app:cameraExperimental="true"
-            app:cameraEngine="camera1"
-            app:cameraPreview="glSurface"
-            app:cameraPlaySounds="false"
-            app:cameraGrid="off"
-            app:cameraFlash="off"
-            app:cameraAudio="on"
-            app:cameraFacing="back"
-            app:cameraGestureTap="autoFocus"
-            app:cameraGestureLongTap="none"
-            app:cameraGesturePinch="zoom"
-            app:cameraGestureScrollHorizontal="filterControl1"
-            app:cameraGestureScrollVertical="exposureCorrection"
-            app:cameraMode="picture"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            android:layout_centerInParent="true"
+            android:progress="0"
+            app:indicatorColor="#ffF53357"
+            app:indicatorSize="72dp"
+            app:trackColor="#CCffffff" />
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tl_choose"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:tabSelectedTextColor="@color/yellow"
-            app:tabRippleColor="@color/transparent"
-            app:tabTextColor="@color/white"
-            app:tabIndicatorHeight="0dp"
-            />
+    </RelativeLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <ImageView
+        android:id="@+id/iv_switch"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/switch_camera"
+        android:scaleType="fitCenter"
+        android:layout_toEndOf="@id/cl_capture"
+        android:layout_alignTop="@id/cl_capture"
+        android:layout_alignBottom="@id/cl_capture"
+        android:layout_marginStart="48dp"/>
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_opera"
-        android:layout_gravity="bottom"
-        android:layout_width="match_parent"
+    <com.cheban.cheban_camera.FlashModesView
+        android:id="@+id/view_flash_modes"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp">
+        android:layout_marginEnd="22dp"
+        android:layout_marginTop="4dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible"
+        />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/tv_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="轻触拍照，按住摄像"
+        android:textColor="#fff"
+        android:textSize="14sp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/cl_capture"
+        android:layout_marginBottom="42dp"
+        />
 
-            <ImageView
-                android:id="@+id/iv_back"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@mipmap/close"
-                android:scaleType="fitXY"
-                app:layout_constraintTop_toTopOf="@+id/cl_capture"
-                app:layout_constraintBottom_toBottomOf="@+id/cl_capture"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@+id/cl_capture"/>
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:visibility="invisible"
+        android:textColor="#fff"
+        android:layout_marginBottom="42dp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/cl_capture"/>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cl_capture"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:background="@drawable/shape_40_corner_bg_white"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent">
-
-                <View
-                    android:id="@+id/v_capture"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
-                    android:background="@drawable/shape_27_corner_bg_white"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"/>
-
-                <View
-                    android:id="@+id/v_end"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:visibility="gone"
-                    android:background="@drawable/shape_4_corner_bg_red"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <ImageView
-                android:id="@+id/iv_switch"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@mipmap/switch_camera"
-                android:scaleType="fitXY"
-                app:layout_constraintTop_toTopOf="@+id/cl_capture"
-                app:layout_constraintBottom_toBottomOf="@+id/cl_capture"
-                app:layout_constraintLeft_toRightOf="@+id/cl_capture"
-                app:layout_constraintRight_toRightOf="parent"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</LinearLayout>
+</RelativeLayout>
