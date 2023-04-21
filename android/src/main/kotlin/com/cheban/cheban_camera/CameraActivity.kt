@@ -110,6 +110,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
         if (sourceType == 1) {
             progressCircular.trackColor = Color.WHITE
+            tipTV.text = "轻点拍照"
         }
 
         cameraView.setAutoFocusMarker(DefaultAutoFocusMarker())
@@ -384,6 +385,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
         runOnUiThread {
             timeTV.visibility = View.VISIBLE
             tipTV.visibility = View.INVISIBLE
+            alphaAnimation.cancel()
             progressCircular.progress = 0
         }
     }
