@@ -118,11 +118,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                 self.tipLabel.text = "00:00:" + String(countdown)
             }
         }
-        $0.sourceType = sourceType
         $0.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview($0)
         return $0
-    }(TakeshotButton())
+    }(TakeshotButton(frame: .zero, sourceType: sourceType))
     
     /// 中间提示（包括录像时间提示）
     lazy var tipLabel: UILabel = {

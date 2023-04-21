@@ -35,8 +35,9 @@ class TakeshotButton: UIView, CAAnimationDelegate {
         return $0
     }(UIView())
     
-    override init(frame: CGRect) {
+    init(frame: CGRect, sourceType: Int) {
         super.init(frame: frame)
+        self.sourceType = sourceType
         isUserInteractionEnabled = true
         NSLayoutConstraint.activate([
             circleProgressView.widthAnchor.constraint(equalTo: self.widthAnchor),

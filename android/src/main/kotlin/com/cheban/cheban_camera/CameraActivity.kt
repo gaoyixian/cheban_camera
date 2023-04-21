@@ -3,6 +3,7 @@ package com.cheban.cheban_camera
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PointF
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -84,16 +85,16 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
         flashModesView = findViewById(R.id.view_flash_modes)
         flashModesView.handler = this
         progressCircular = findViewById(R.id.progress_circular)
-        progressCircular.trackThickness = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            6f,
-            applicationContext.resources.displayMetrics
-        ).toInt()
-        progressCircular.trackCornerRadius = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            8f,
-            applicationContext.resources.displayMetrics
-        ).toInt()
+//        progressCircular.trackThickness = TypedValue.applyDimension(
+//            TypedValue.COMPLEX_UNIT_DIP,
+//            6f,
+//            applicationContext.resources.displayMetrics
+//        ).toInt()
+//        progressCircular.trackCornerRadius = TypedValue.applyDimension(
+//            TypedValue.COMPLEX_UNIT_DIP,
+//            8f,
+//            applicationContext.resources.displayMetrics
+//        ).toInt()
         alphaAnimation.duration = 800
         alphaAnimation.setAnimationListener(this)
         GlobalScope.launch {
@@ -105,6 +106,10 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
         if (faceType == 2) {
             cameraView.facing = Facing.FRONT
+        }
+
+        if (sourceType == 1) {
+            progressCircular.trackColor = Color.WHITE
         }
 
         cameraView.setAutoFocusMarker(DefaultAutoFocusMarker())
@@ -440,6 +445,9 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
     /// 长按事件代理
     override fun onLongClick(p0: View?): Boolean {
+        if (sourceType == 1) {
+            return false
+        }
         startRecord()
         return true
     }
