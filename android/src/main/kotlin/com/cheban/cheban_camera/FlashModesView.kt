@@ -35,12 +35,15 @@ class FlashModesView(context: Context, attributeSet: AttributeSet): LinearLayout
     override fun onClick(p0: View?) {
         when (p0?.id) {
             ivFlashOff.id -> {
+                ivFlashSwitch.setImageDrawable(resources.getDrawable(R.mipmap.flash_off))
                 handler?.invoked(0)
             }
             ivFlashAuto.id -> {
+                ivFlashSwitch.setImageDrawable(resources.getDrawable(R.mipmap.flash_auto))
                 handler?.invoked(1)
             }
             ivFlashOn.id -> {
+                ivFlashSwitch.setImageDrawable(resources.getDrawable(R.mipmap.flash_on))
                 handler?.invoked(2)
             }
             ivFlashSwitch.id -> {

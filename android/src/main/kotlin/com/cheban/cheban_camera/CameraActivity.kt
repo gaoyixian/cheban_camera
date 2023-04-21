@@ -95,6 +95,9 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 //            8f,
 //            applicationContext.resources.displayMetrics
 //        ).toInt()
+        val BIT_RATE_1080P = 16000000
+        cameraView.videoBitRate = BIT_RATE_1080P
+
         alphaAnimation.duration = 800
         alphaAnimation.setAnimationListener(this)
         GlobalScope.launch {
@@ -492,7 +495,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
             }
             2 -> {
                 flashIV.setImageDrawable(applicationContext.resources.getDrawable(R.mipmap.flash_on))
-                cameraView.flash = Flash.TORCH
+                cameraView.flash = Flash.ON
             }
             3 -> {
             }
