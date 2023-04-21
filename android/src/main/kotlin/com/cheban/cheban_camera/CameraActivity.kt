@@ -259,7 +259,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
     }
 
     fun takeVideo(video: VideoResult) {
-        saveFileToGallery(video.file.path, null)
         //saveVideoToSystemAlbum(videoResult!!.file.path)
         val mMMR = MediaMetadataRetriever()
         mMMR.setDataSource(this, Uri.fromFile(video.file))
