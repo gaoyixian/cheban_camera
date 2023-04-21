@@ -68,7 +68,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     
     /// 闪光灯按钮
     lazy var flashButton: UIButton = {
-        $0.setImage(sourceImage(name: "ic_camera_flash"), for: .normal)
+        $0.setImage(sourceImage(name: "flash_off"), for: .normal)
         $0.translatesAutoresizingMaskIntoConstraints = false
         $0.isUserInteractionEnabled = cameraManager.hasFlash;
         $0.addTarget(self, action: #selector(onSwitchFlashPressed), for: .touchUpInside)
@@ -145,10 +145,8 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     func setupConstraints() {
         NSLayoutConstraint.activate([
             previewLayer.widthAnchor.constraint(equalTo: self.view.widthAnchor),
-            flashModeBar.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             flashModeBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 4.fixed),
             flashModeBar.heightAnchor.constraint(equalToConstant: 48.fixed),
-            flashModeBar.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 20.fixed),
             flashModeBar.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -20.fixed),
             previewLayer.heightAnchor.constraint(equalTo: self.view.heightAnchor),
             flashButton.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 14.fixed),

@@ -20,7 +20,6 @@ class FlashModeBar: UIView {
     
     lazy var stackView: UIStackView = {
         $0.translatesAutoresizingMaskIntoConstraints = false
-        $0.alignment = .center
         $0.axis = .horizontal
         $0.distribution = .fillEqually
         $0.spacing = 36.fixed
@@ -40,7 +39,7 @@ class FlashModeBar: UIView {
         layer.cornerRadius = 26
         layer.masksToBounds = true
         backgroundColor = .black.withAlphaComponent(0.65)
-        let modes = [FlashMode.off, FlashMode.auto, FlashMode.on, FlashMode.open]
+        let modes = [FlashMode.off, FlashMode.auto, FlashMode.on]
         modes.forEach { m in
             let item = renderItem(m);
             stackView.addArrangedSubview(item)
@@ -57,6 +56,7 @@ class FlashModeBar: UIView {
             separatorView.heightAnchor.constraint(equalToConstant: 36.fixed),
             separatorView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             separatorView.leftAnchor.constraint(equalTo: stackView.rightAnchor, constant: 32.fixed),
+            separatorView.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -58.fixed)
         ])
     }
     
