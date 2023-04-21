@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true"
         app:cameraAudio="on"
-        app:cameraEngine="camera2"
+        app:cameraEngine="camera1"
         app:cameraExperimental="true"
         app:cameraFacing="back"
         app:cameraFlash="off"

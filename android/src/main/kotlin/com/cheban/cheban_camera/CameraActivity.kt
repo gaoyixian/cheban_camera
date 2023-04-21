@@ -95,8 +95,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 //            8f,
 //            applicationContext.resources.displayMetrics
 //        ).toInt()
-        val BIT_RATE_1080P = 16000000
-        cameraView.videoBitRate = BIT_RATE_1080P
 
         alphaAnimation.duration = 800
         alphaAnimation.setAnimationListener(this)
