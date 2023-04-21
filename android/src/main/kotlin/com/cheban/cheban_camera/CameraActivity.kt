@@ -111,7 +111,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
         if (sourceType == 1) {
             progressCircular.trackColor = Color.WHITE
-            tipTV.text = "轻点拍照"
+            tipTV.text = "点击拍照"
         }
 
         cameraView.setAutoFocusMarker(DefaultAutoFocusMarker())

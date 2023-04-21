@@ -187,7 +187,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
             cameraManager.cameraOutputMode = .videoWithMic
         }
         if (sourceType == 1) {
-            tipLabel.text = "轻点拍照"
+            tipLabel.text = "点击拍照"
         }
         cameraManager.cameraOutputQuality = .high
         cameraManager.shouldFlipFrontCameraImage = true
