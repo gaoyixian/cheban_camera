@@ -140,7 +140,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraActivity = null
         recordTimer.cancel()
         cameraView.destroy()
     }

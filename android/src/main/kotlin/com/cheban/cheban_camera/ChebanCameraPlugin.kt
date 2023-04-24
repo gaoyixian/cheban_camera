@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.widget.Toast
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -42,7 +43,12 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     } else if (call.method == "destory") {
       if (context != null) {
         val activity = findActivity(context!!)
-        activity?.finish()
+        if (activity != null) {
+          activity.finish()
+        } else {
+          Toast.makeText(context, "未发现相机", Toast.LENGTH_SHORT).show()
+        }
+      } else {
       }
     } else {
       result.notImplemented()
