@@ -42,8 +42,7 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       context!!.startActivity(intent)
     } else if (call.method == "destory") {
       if (CameraActivity.cameraActivity != null) {
-        CameraActivity.cameraActivity.finish()
-      } else {
+        CameraActivity.cameraActivity!!.finish()
       }
     } else {
       result.notImplemented()
