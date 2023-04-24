@@ -41,31 +41,12 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
     } else if (call.method == "destory") {
-      if (context != null) {
-        val activity = findActivity(context!!)
-        if (activity != null) {
-          activity.finish()
-        } else {
-          Toast.makeText(context, "未发现相机", Toast.LENGTH_SHORT).show()
-        }
+      if (CameraActivity.cameraActivity != null) {
+        CameraActivity.cameraActivity.finish()
       } else {
       }
     } else {
       result.notImplemented()
-    }
-  }
-
-  private fun findActivity(context: Context): Activity? {
-    return when (context) {
-        is Activity -> {
-          context
-        }
-      is ContextWrapper -> {
-        findActivity((context).baseContext)
-      }
-      else -> {
-        null
-      }
     }
   }
 

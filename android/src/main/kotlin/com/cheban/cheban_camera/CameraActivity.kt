@@ -49,6 +49,8 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
         var result: io.flutter.plugin.common.MethodChannel.Result? = null
         var sourceType: Int = 3
         var faceType: Int = 1
+        @JvmStatic
+        var cameraActivity: CameraActivity? = null
     }
 
     private lateinit var cameraView: CameraView
@@ -73,6 +75,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        cameraActivity = this
         setContentView(R.layout.activity_camera)
         cameraView = findViewById<CameraView>(R.id.camera)
         flashIV = findViewById(R.id.iv_flash)
@@ -140,6 +143,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
 
     override fun onDestroy() {
         super.onDestroy()
+        cameraActivity = null
         recordTimer.cancel()
         cameraView.destroy()
     }
