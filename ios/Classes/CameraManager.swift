@@ -107,7 +107,7 @@ public enum CaptureError: Error {
     case assetNotSaved
 }
 
-protocol CameraManagerDelegate {
+protocol CameraManagerDelegate: AnyObject {
     func isRecordEndTime(outputFileURL: URL)
 }
 
@@ -116,7 +116,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     
     // MARK: - Public properties
     
-    var cameraDelegate : CameraManagerDelegate?
+    weak var cameraDelegate : CameraManagerDelegate?
     
     // Property for custom image album name.
     open var imageAlbumName: String?
@@ -403,7 +403,8 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
                     validCompletion()
                 }
             } else {
-                _setupCamera {
+                _setupCamera { [weak self] in
+                    guard let self = self else { return }
                     self._addPreviewLayerToView(view)
                     self.cameraOutputMode = newCameraOutputMode
                     if let validCompletion = completion {
@@ -428,7 +429,8 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
      :param: completion Completion block with the result of permission request
      */
     open func askUserForCameraPermission(_ completion: @escaping (Bool) -> Void) {
-        AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { (allowedAccess) -> Void in
+        AVCaptureDevice.requestAccess(for: AVMediaType.video, completionHandler: { [weak self] (allowedAccess) -> Void in
+            guard let self = self else { return }
             if self.cameraOutputMode == .videoWithMic {
                 AVCaptureDevice.requestAccess(for: AVMediaType.audio, completionHandler: { (allowedAccess) -> Void in
                     DispatchQueue.main.async { () -> Void in
@@ -521,8 +523,8 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
      :param: imageCompletion Completion block containing the captured UIImage
      */
     open func capturePictureWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void) {
-        capturePictureDataWithCompletion { result in
-            
+        capturePictureDataWithCompletion { [weak self] result in
+            guard let self = self else { return }
             guard let imageData = result.imageData else {
                 if case let .failure(error) = result {
                     imageCompletion(.failure(error))
@@ -627,7 +629,6 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         let date = Date()
         
         library?.save(imageAtURL: filePath, albumName: imageAlbumName, date: date, location: nil) { asset in
-            
             guard let _ = asset else {
                 return imageCompletion(.failure(CaptureError.assetNotSaved))
             }
@@ -1945,6 +1946,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     }
     
     deinit {
+        print("CameraManager destory")
         _stopFollowingDeviceOrientation()
         stopAndRemoveCaptureSession()
     }

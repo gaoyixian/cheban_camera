@@ -193,16 +193,17 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
         cameraManager.shouldFlipFrontCameraImage = true
         cameraManager.videoStabilisationMode = .standard
         cameraManager.showAccessPermissionPopupAutomatically = false
-        
+        cameraManager.showErrorBlock = { [weak self] (erTitle: String, erMessage: String) -> Void in
+            guard let self = self else { return }
+            let alertController = UIAlertController(title: erTitle, message: erMessage, preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { (_) -> Void in }))
+            self.present(alertController, animated: true, completion: nil)
+        }
+
         cameraManager.askUserForCameraPermission { [weak self] permissionGranted in
             guard let self = self else { return }
             if permissionGranted {
                 self.cameraManager.addPreviewLayerToView(self.previewLayer, newCameraOutputMode: self.cameraManager.cameraOutputMode)
-                self.cameraManager.showErrorBlock = { (erTitle: String, erMessage: String) -> Void in
-                    let alertController = UIAlertController(title: erTitle, message: erMessage, preferredStyle: .alert)
-                    alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { (_) -> Void in }))
-                    self.present(alertController, animated: true, completion: nil)
-                }
             } else {
                 if #available(iOS 10.0, *) {
                     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -252,7 +253,8 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     }
     
     func capturePicture() {
-        cameraManager.capturePictureDataWithCompletion { result in
+        cameraManager.capturePictureDataWithCompletion { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .failure:  self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
             case .success(let content):
@@ -311,17 +313,18 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
             cameraManager.startRecordingVideo()
         } else {
             performHideTip(true, false)
-            cameraManager.stopVideoRecording { [self] (videoURL, error) -> Void in
+            cameraManager.stopVideoRecording { [weak self] (videoURL, error) -> Void in
+                guard let self = self else { return }
                 if error != nil {
                     self.cameraManager.showErrorBlock("Error occurred", "Cannot save video.")
                 } else {
-                    let image = thumbnailImageForVideo(videoURL: videoURL!)
+                    let image = self.thumbnailImageForVideo(videoURL: videoURL!)
                     if (image != nil) {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
-                        let duration = totalSecondForVideo(videoURL: videoURL!)
+                        let duration = self.totalSecondForVideo(videoURL: videoURL!)
                         do {
                             try image!.pngData()?.write(to: URL(fileURLWithPath: path))
-                            flutterResult!([
+                            self.flutterResult!([
                                 "width": Int(image!.size.width),
                                 "height": Int(image!.size.height),
                                 "type": 2,
@@ -384,6 +387,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
         self.dismiss(animated: true)
     }
     
+    deinit {
+        print("如果这行没有执行的话，要注意看下CameraManager.destory有没有执行，更重要的是要去关心是哪里被内存引用问题，否则cameraManager只是被移除，依然占用内存")
+        print("CameraViewController deinit")
+    }
     
     
     /*
