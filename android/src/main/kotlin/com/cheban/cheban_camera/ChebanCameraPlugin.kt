@@ -1,11 +1,12 @@
 package com.cheban.cheban_camera
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import androidx.annotation.NonNull
-
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -39,11 +40,26 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
     } else if (call.method == "destory") {
-      if (CameraActivity.cameraActivity != null) {
-        CameraActivity.cameraActivity!!.finish()
+      if (context != null) {
+        val activity = findActivity(context!!)
+        activity?.finish()
       }
     } else {
       result.notImplemented()
+    }
+  }
+
+  private fun findActivity(context: Context): Activity? {
+    return when (context) {
+        is Activity -> {
+          context
+        }
+      is ContextWrapper -> {
+        findActivity((context).baseContext)
+      }
+      else -> {
+        null
+      }
     }
   }
 

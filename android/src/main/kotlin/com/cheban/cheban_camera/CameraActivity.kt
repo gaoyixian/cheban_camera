@@ -49,8 +49,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
         var result: io.flutter.plugin.common.MethodChannel.Result? = null
         var sourceType: Int = 3
         var faceType: Int = 1
-        @JvmStatic
-        var cameraActivity: CameraActivity? = null
     }
 
     private lateinit var cameraView: CameraView
@@ -76,7 +74,6 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
-        cameraActivity = this
         cameraView = findViewById<CameraView>(R.id.camera)
         flashIV = findViewById(R.id.iv_flash)
         timeTV = findViewById(R.id.tv_time)
