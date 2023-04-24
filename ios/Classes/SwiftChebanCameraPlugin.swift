@@ -16,7 +16,7 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
           let sourceType = dict["source_type"] as! Int
           let faceType = dict["face_type"] as! Int
           
-          var cameraVC = CameraViewController.init()
+          let cameraVC = CameraViewController.init()
           cameraVC.flutterResult = result
           cameraVC.sourceType = sourceType
           cameraVC.faceType = faceType
@@ -49,6 +49,10 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
 //                  }
 //              }
 //          }
+      } else if (call.method == "destory") {
+          if (true == UIApplication.shared.keyWindow?.rootViewController?.presentedViewController?.isKind(of: CameraViewController.self)) {
+              UIApplication.shared.keyWindow?.rootViewController?.presentedViewController?.dismiss(animated: true)
+          }
       }
   }
     

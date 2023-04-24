@@ -294,7 +294,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                         print("写入文件失败")
                     }
                 }
-                self.dismiss(animated: false)
+                self.dismiss(animated: true)
                 //                    let validVC = ImageViewController.init()
                 //                    let capturedData = content.asData
                 //                    let capturedImage = UIImage(data: capturedData!)!
@@ -332,7 +332,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            self.dismiss(animated: false)
+                            self.dismiss(animated: true)
                         } catch {
                             print("写入文件失败")
                         }

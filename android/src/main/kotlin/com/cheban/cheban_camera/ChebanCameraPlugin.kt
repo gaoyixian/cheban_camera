@@ -38,7 +38,11 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       CameraActivity.faceType = (dict["face_type"] as Int)
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
-    }  else {
+    } else if (call.method == "destory") {
+      if (CameraActivity.currActivity != null) {
+        CameraActivity.currActivity!!.finish()
+      }
+    } else {
       result.notImplemented()
     }
   }

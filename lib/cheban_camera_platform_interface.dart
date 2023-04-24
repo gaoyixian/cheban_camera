@@ -33,4 +33,7 @@ abstract class ChebanCameraPlatform extends PlatformInterface {
     throw UnimplementedError('pickCamera() has not been implemented.');
   }
 
+  Future<void> destory() {
+    throw UnimplementedError('destory() has not been implemented.');
+  }
 }

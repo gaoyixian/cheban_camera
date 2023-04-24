@@ -13,4 +13,7 @@ class ChebanCamera {
         .pickCamera(sourceType: sourceType, faceType: faceType);
   }
 
+  Future<void> destory() {
+    return ChebanCameraPlatform.instance.destory();
+  }
 }

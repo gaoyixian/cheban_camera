@@ -49,6 +49,7 @@ class CameraActivity : AppCompatActivity(), View.OnClickListener, View.OnLongCli
         var result: io.flutter.plugin.common.MethodChannel.Result? = null
         var sourceType: Int = 3
         var faceType: Int = 1
+        var currActivity: CameraActivity? = null
     }
 
     private lateinit var cameraView: CameraView

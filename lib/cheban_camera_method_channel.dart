@@ -32,4 +32,8 @@ class MethodChannelChebanCamera extends ChebanCameraPlatform {
     return null;
   }
 
+  @override
+  Future<void> destory() async {
+    methodChannel.invokeMethod('destory');
+  }
 }
