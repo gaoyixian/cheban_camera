@@ -390,6 +390,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     deinit {
         print("如果这行没有执行的话，要注意看下CameraManager.destory有没有执行，更重要的是要去关心是哪里被内存引用问题，否则cameraManager只是被移除，依然占用内存")
         print("CameraViewController deinit")
+        cameraManager.destroy()
     }
     
     
