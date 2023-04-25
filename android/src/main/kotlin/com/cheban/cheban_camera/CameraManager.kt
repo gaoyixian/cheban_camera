@@ -6,12 +6,16 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.util.Size
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
+import androidx.camera.core.AspectRatio.RATIO_16_9
+import androidx.camera.core.AspectRatio.RATIO_4_3
 import androidx.camera.core.FocusMeteringAction.FLAG_AF
 import androidx.camera.core.ImageCapture.*
+import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
@@ -80,13 +84,13 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun switchFacing() {
-        when (facing) {
+        facing = when (facing) {
             CameraFacing.BACK -> {
-                facing = CameraFacing.FRONT
+                CameraFacing.FRONT
 
             }
             CameraFacing.FRONT -> {
-                facing = CameraFacing.BACK
+                CameraFacing.BACK
             }
         }
     }
@@ -98,7 +102,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         val destFile = File(context.filesDir, "picture_${System.currentTimeMillis()}.jpg")
 
         // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions
+        val outputOptions = OutputFileOptions
             .Builder(destFile)
             .build()
         imageCapture.takePicture(
@@ -286,11 +290,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({
+            val resources = context.resources
+            val displayMetrics = resources.displayMetrics
+            val viewSize = Size(displayMetrics.widthPixels, displayMetrics.heightPixels)
+
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             // Preview
             val preview = Preview.Builder()
+                .setTargetResolution(viewSize)
                 .build()
                 .also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
@@ -309,7 +318,9 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 cameraProvider.unbindAll()
                 when (captureMode) {
                     CameraCaptureMode.PICTURE -> {
-                        mImageCapture = Builder().build()
+                        mImageCapture = Builder()
+                            .setTargetResolution(viewSize)
+                            .build()
                         when (flashMode) {
                             CameraFlashMode.OFF -> {
                                 mImageCapture?.flashMode = FLASH_MODE_OFF
@@ -324,12 +335,14 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                         camera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
                     }
                     CameraCaptureMode.MOVIE -> {
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HD)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         camera = cameraProvider.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
                     }
                     CameraCaptureMode.ALL -> {
-                        mImageCapture = Builder().build()
+                        mImageCapture = Builder()
+                            .setTargetResolution(viewSize)
+                            .build()
                         when (flashMode) {
                             CameraFlashMode.OFF -> {
                                 mImageCapture?.flashMode = FLASH_MODE_OFF
@@ -341,7 +354,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                                 mImageCapture?.flashMode = FLASH_MODE_ON
                             }
                         }
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HD)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         camera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
                     }
