@@ -1,10 +1,7 @@
 package com.cheban.cheban_camera
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
-import android.widget.Toast
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -41,6 +38,17 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
     } else if (call.method == "destory") {
+//      val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+//      var list = activityManager.getRunningTasks(1)
+//      if (list != null && list.size > 0) {
+//
+//        val componentName = list[0].topActivity
+//        componentName?.className.let {
+//          if (it.equals("CameraActivity")) {
+//            只获取到了Name，没有获取到activity
+//          }
+//        }
+//      }
       if (CameraActivity.cameraActivity != null) {
         CameraActivity.cameraActivity!!.finish()
       }

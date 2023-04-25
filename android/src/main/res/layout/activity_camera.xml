@@ -8,31 +8,16 @@
     android:background="@color/black"
     tools:context=".CameraActivity">
 
-    <com.otaliastudios.cameraview.CameraView
-        android:id="@+id/camera"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/view_finder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <View
+        android:id="@+id/backdrop"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:keepScreenOn="true"
-        app:cameraAudio="on"
-        app:cameraEngine="camera1"
-        app:cameraExperimental="true"
-        app:cameraFacing="back"
-        app:cameraFlash="off"
-        app:cameraGestureLongTap="none"
-        app:cameraGesturePinch="zoom"
-        app:cameraGestureScrollHorizontal="filterControl1"
-        app:cameraGestureScrollVertical="exposureCorrection"
-        app:cameraGestureTap="autoFocus"
-        app:cameraGrid="off"
-        app:cameraMode="picture"
-        app:cameraPlaySounds="false"
-        app:cameraPreview="glSurface"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        />
 
     <ImageView
         android:id="@+id/iv_flash"
@@ -44,6 +29,18 @@
         android:layout_marginTop="14dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"/>
+
+    <ImageView
+        android:id="@+id/iv_recording"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@mipmap/no_recording"
+        android:layout_below="@id/iv_flash"
+        android:layout_marginTop="28dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="34dp"
+        android:visibility="invisible"
+        />
 
     <ImageView
         android:id="@+id/iv_back"
@@ -96,7 +93,7 @@
         android:layout_alignBottom="@id/cl_capture"
         android:layout_marginStart="48dp"/>
 
-    <com.cheban.cheban_camera.FlashModesView
+    <com.cheban.cheban_camera.FlashSelectionBar
         android:id="@+id/view_flash_modes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
