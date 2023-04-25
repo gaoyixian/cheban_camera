@@ -354,6 +354,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun destroy() {
+        camera = null
         mImageCapture = null
         mVideoCapture = null
         mRecording = null
