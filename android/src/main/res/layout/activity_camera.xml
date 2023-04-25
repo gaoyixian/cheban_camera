@@ -129,4 +129,11 @@
         android:layout_centerHorizontal="true"
         android:layout_above="@id/cl_capture"/>
 
+    <ImageView
+        android:id="@+id/focus"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:visibility="gone"
+        android:src="@mipmap/asset_picker_focus"/>
+
 </RelativeLayout>

@@ -79,6 +79,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var mFlashSelectionBar: FlashSelectionBar
     private lateinit var mRecordImageView: ImageView
     private lateinit var mBackdropView: View
+    private lateinit var mFocusImageView: ImageView
 
     /// 相机预览视图
     private lateinit var mPreviewView: PreviewView
@@ -105,7 +106,7 @@ class CameraActivity : AppCompatActivity() {
         mProgressCircular = findViewById(R.id.progress_circular)
         mRecordImageView = findViewById(R.id.iv_recording)
         mFlashSelectionBar = findViewById(R.id.view_flash_modes)
-
+        mFocusImageView = findViewById(R.id.focus)
         mFlashSelectionBar.setListener(object : OnFlashSelectionListener {
             override fun callback(value: Int) {
                 when (value) {
@@ -133,6 +134,45 @@ class CameraActivity : AppCompatActivity() {
 
         mBackdropView.setOnTouchListener { p0, p1 ->
             mCameraManager.focus(p1.x, p1.y, true)
+            /// 布局是用relativeLayout
+            val layoutParams = mFocusImageView.layoutParams as RelativeLayout.LayoutParams
+            layoutParams.leftMargin = (p1.x - TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, resources.displayMetrics)).toInt()
+            layoutParams.topMargin = (p1.y - TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, resources.displayMetrics)).toInt()
+            mFocusImageView.layoutParams = layoutParams
+            val alphaOutAnim = AlphaAnimation(0f, 1f)
+            val alphaInAnim = AlphaAnimation(1f, 0f)
+            alphaOutAnim.duration = animationDurationMillis
+            alphaInAnim.duration = animationDurationMillis
+            alphaOutAnim.setAnimationListener(object : AnimationListener {
+                override fun onAnimationStart(p0: Animation?) {
+                    mFocusImageView.visibility = View.VISIBLE
+                    mFocusImageView.animate().scaleX(1.2f)
+                    mFocusImageView.animate().scaleY(1.2f)
+                }
+
+                override fun onAnimationRepeat(p0: Animation?) {
+
+                }
+
+                override fun onAnimationEnd(p0: Animation?) {
+                    mFocusImageView.startAnimation(alphaInAnim)
+                }
+            })
+            alphaInAnim.setAnimationListener(object : AnimationListener {
+                override fun onAnimationStart(p0: Animation?) {
+                    mFocusImageView.animate().scaleX(1f)
+                    mFocusImageView.animate().scaleY(1f)
+                }
+
+                override fun onAnimationRepeat(p0: Animation?) {
+
+                }
+
+                override fun onAnimationEnd(p0: Animation?) {
+                    mFocusImageView.visibility = View.GONE
+                }
+            })
+            mFocusImageView.startAnimation(alphaOutAnim)
             false
         }
 
@@ -232,8 +272,8 @@ class CameraActivity : AppCompatActivity() {
         recordTimer.start()
         runOnUiThread {
             val layoutParams = mCaptureView.layoutParams
-            layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, applicationContext.resources.displayMetrics).toInt()
-            layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, applicationContext.resources.displayMetrics).toInt()
+            layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
+            layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
             mCaptureView.layoutParams = layoutParams
             mTimeTextView.visibility = View.VISIBLE
             mTipTextView.visibility = View.GONE
@@ -245,8 +285,8 @@ class CameraActivity : AppCompatActivity() {
         recordTimer.cancel()
         runOnUiThread {
             val layoutParams = mCaptureView.layoutParams
-            layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, applicationContext.resources.displayMetrics).toInt()
-            layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, applicationContext.resources.displayMetrics).toInt()
+            layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, resources.displayMetrics).toInt()
+            layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, resources.displayMetrics).toInt()
             mCaptureView.layoutParams = layoutParams
             mTimeTextView.visibility = View.INVISIBLE
             mTimeTextView.text = "00:00"
