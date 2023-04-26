@@ -242,20 +242,22 @@ class CameraActivity : AppCompatActivity() {
         GlobalScope.launch {
             delay(5000)
             runOnUiThread {
-                val alphaAnim = AlphaAnimation(1f, 0f)
-                alphaAnim.duration = animationDurationMillis
-                alphaAnim.setAnimationListener(object : AnimationListener {
-                    override fun onAnimationEnd(p0: Animation?) {
-                        mTipTextView.visibility = View.GONE
-                    }
+                if (mTimeTextView.visibility == View.INVISIBLE) {
+                    val alphaAnim = AlphaAnimation(1f, 0f)
+                    alphaAnim.duration = animationDurationMillis
+                    alphaAnim.setAnimationListener(object : AnimationListener {
+                        override fun onAnimationEnd(p0: Animation?) {
+                            mTipTextView.visibility = View.GONE
+                        }
 
-                    override fun onAnimationRepeat(p0: Animation?) {
-                    }
+                        override fun onAnimationRepeat(p0: Animation?) {
+                        }
 
-                    override fun onAnimationStart(p0: Animation?) {
-                    }
-                })
-                mTipTextView.startAnimation(alphaAnim)
+                        override fun onAnimationStart(p0: Animation?) {
+                        }
+                    })
+                    mTipTextView.startAnimation(alphaAnim)
+                }
             }
         }
     }

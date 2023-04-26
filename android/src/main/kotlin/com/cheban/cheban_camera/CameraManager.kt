@@ -266,6 +266,9 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun focus(x: Float, y: Float, auto: Boolean) {
+        if (camera == null) {
+            return
+        }
         camera?.cameraControl?.cancelFocusAndMetering()
         val createPoint: MeteringPoint = if (auto) {
 
