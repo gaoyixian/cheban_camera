@@ -261,8 +261,21 @@ class CameraActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onStart() {
+        super.onStart()
+        mCameraManager.orientationEventListener.enable()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onStop() {
+        super.onStop()
+        mCameraManager.orientationEventListener.disable()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onDestroy() {
         super.onDestroy()
+        Log.d("CameraActivity", "Destory")
         mCameraManager.destroy()
         cameraActivity = null
         recordTimer.cancel()

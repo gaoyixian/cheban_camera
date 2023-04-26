@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import android.view.OrientationEventListener
+import android.view.Surface
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -40,6 +42,25 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
 
     /// 监听回调
     private var mOnCameraEventListener: OnCameraEventListener? = null
+
+    val orientationEventListener by lazy {
+        object : OrientationEventListener(context) {
+            override fun onOrientationChanged(orientation: Int) {
+                if (orientation == ORIENTATION_UNKNOWN) {
+                    return
+                }
+
+                val rotation = when (orientation) {
+                    in 45 until 135 -> Surface.ROTATION_270
+                    in 135 until 225 -> Surface.ROTATION_180
+                    in 225 until 315 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+
+                mImageCapture?.targetRotation = rotation
+            }
+        }
+    }
 
     /// 摄像头方向
     var facing: CameraFacing = CameraFacing.BACK
@@ -367,6 +388,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun destroy() {
+        Log.d("CameraManager", "Destory")
         camera = null
         mImageCapture = null
         mVideoCapture = null
