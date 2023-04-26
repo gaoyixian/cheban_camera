@@ -29,6 +29,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   _onTackPhoto() async {
+    if (videoPlayerController != null) {
+      videoPlayerController!.dispose();
+      videoPlayerController = null;
+    }
     _cameraModel = await _chebanCameraPlugin.pickCamera();
     if (_cameraModel != null) {
       if (_cameraModel!.type == CameraTypeVideo) {

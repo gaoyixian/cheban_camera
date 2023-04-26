@@ -44,8 +44,8 @@ class CameraActivity : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onTick(p0: Long) {
-            val value = 20 - (p0 / 1000)
-            Log.w("RecordTimer", "计时器运行中 ------- $value")
+            val value = 20 - ((p0 / 1000) + 1)
+            Log.w("RecordTimer", "计时器运行中 ------- ${(p0 / 1000)}")
             runOnUiThread {
                 if (value >= 0) {
                     if (value < 10) {
@@ -62,8 +62,8 @@ class CameraActivity : AppCompatActivity() {
         override fun onFinish() {
             mTimeTextView.text = "00:20"
             mProgressCircular.setProgress((100).toInt(), true)
+            mCameraManager.closeVideoRecord()
         }
-
     }
 
     private val animationDurationMillis: Long = 300

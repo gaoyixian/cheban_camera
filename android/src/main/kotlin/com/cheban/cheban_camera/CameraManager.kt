@@ -169,10 +169,10 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     /// 再做一次关闭录制，安全第一
                     closeVideoRecord()
                     /// 判断视频文件是否存在
-                    if (recordEvent.outputResults.outputUri.toFile().exists()) {
+                    if (recordEvent.outputResults.outputUri.toString().isNotEmpty() && recordEvent.outputResults.outputUri.toFile().exists()) {
                         finishRecordVideo(recordEvent.outputResults.outputUri)
                     } else {
-                        Toast.makeText(context, "视频文件不存在", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, "视频文件不存在", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
