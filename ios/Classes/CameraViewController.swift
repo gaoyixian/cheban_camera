@@ -251,7 +251,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     @objc func onBackPressed(sender: UIButton) {
         takeshotButton.invalidTimer()
         cameraManager.destroy()
-        self.dismiss(animated: true)
+        self.dismiss(animated: false)
     }
     
     func capturePicture() {
@@ -296,7 +296,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                         print("写入文件失败")
                     }
                 }
-                self.dismiss(animated: true)
+                self.dismiss(animated: false)
                 //                    let validVC = ImageViewController.init()
                 //                    let capturedData = content.asData
                 //                    let capturedImage = UIImage(data: capturedData!)!
@@ -338,7 +338,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            self.dismiss(animated: true)
+                            self.dismiss(animated: false)
                         } catch {
                             print("写入文件失败")
                         }
@@ -385,12 +385,12 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     
     func imageViewCallBack() {
         cameraManager.destroy()
-        self.dismiss(animated: true)
+        self.dismiss(animated: false)
     }
     
     func videoViewCallBack() {
         cameraManager.destroy()
-        self.dismiss(animated: true)
+        self.dismiss(animated: false)
     }
     
     deinit {
