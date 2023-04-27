@@ -216,6 +216,8 @@ class CameraActivity : AppCompatActivity() {
             }
         }
         mSwitchImageView.setOnClickListener {
+            mCameraManager.flashMode = CameraFlashMode.OFF
+            mFlashImageView.setImageDrawable(applicationContext.resources.getDrawable(R.mipmap.flash_off))
             mCameraManager.switchFacing()
         }
         mCaptureButton.setOnClickListener {

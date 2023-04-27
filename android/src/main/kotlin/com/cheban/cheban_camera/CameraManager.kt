@@ -25,6 +25,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import kotlinx.coroutines.delay
 import java.io.*
 import java.util.concurrent.TimeUnit
 
@@ -41,7 +42,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     private var mPendingRecording: PendingRecording? = null
 
     /// 相机
-    private var camera: Camera? = null
+    private var mCamera: Camera? = null
 
     /// 监听回调
     private var mOnCameraEventListener: OnCameraEventListener? = null
@@ -87,16 +88,18 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     var flashMode: CameraFlashMode = CameraFlashMode.OFF
         set(value) {
             field = value
-            if (mImageCapture != null) {
-                when (field) {
-                    CameraFlashMode.OFF -> {
-                        mImageCapture?.flashMode = FLASH_MODE_OFF
-                    }
-                    CameraFlashMode.AUTO -> {
-                        mImageCapture?.flashMode = FLASH_MODE_AUTO
-                    }
-                    CameraFlashMode.OPEN -> {
-                        mImageCapture?.flashMode = FLASH_MODE_ON
+            if (hasFlashUnit()) {
+                if (mImageCapture != null) {
+                    when (field) {
+                        CameraFlashMode.OFF -> {
+                            mImageCapture?.flashMode = FLASH_MODE_OFF
+                        }
+                        CameraFlashMode.AUTO -> {
+                            mImageCapture?.flashMode = FLASH_MODE_AUTO
+                        }
+                        CameraFlashMode.OPEN -> {
+                            mImageCapture?.flashMode = FLASH_MODE_ON
+                        }
                     }
                 }
             }
@@ -115,6 +118,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     fun switchFacing() {
         facing = when (facing) {
             CameraFacing.BACK -> {
+                /// 前摄像头没有闪光灯
                 CameraFacing.FRONT
 
             }
@@ -122,6 +126,10 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 CameraFacing.BACK
             }
         }
+    }
+
+    fun hasFlashUnit(): Boolean {
+        return true == mCamera?.cameraInfo?.hasFlashUnit()
     }
 
     /// 捕捉图片
@@ -132,6 +140,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             return
         }
         lock = true;
+
         val destFile = File(context.filesDir, "picture_${System.currentTimeMillis()}.jpg")
 
         // Create output options object which contains file + metadata
@@ -296,19 +305,19 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun focus(x: Float, y: Float, auto: Boolean) {
-        if (camera == null || camera?.cameraInfo == null) {
+        if (mCamera == null || mCamera?.cameraInfo == null) {
             return
         }
         if (lock) {
             return
         }
         lock = true
-        camera?.cameraControl?.cancelFocusAndMetering()
+        mCamera?.cameraControl?.cancelFocusAndMetering()
         val createPoint: MeteringPoint = if (auto) {
 
             val meteringPointFactory = DisplayOrientedMeteringPointFactory(
                 previewView.display,
-                camera?.cameraInfo!!,
+                mCamera?.cameraInfo!!,
                 previewView.width.toFloat(),
                 previewView.height.toFloat()
             )
@@ -323,7 +332,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             .setAutoCancelDuration(3, TimeUnit.SECONDS)
             .build()
 
-        val future = camera?.cameraControl?.startFocusAndMetering(build)
+        val future = mCamera?.cameraControl?.startFocusAndMetering(build)
 
         future?.addListener({
             try {
@@ -393,7 +402,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                                 mImageCapture?.flashMode = FLASH_MODE_ON
                             }
                         }
-                        camera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
+                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
                     }
                     CameraCaptureMode.MOVIE -> {
                         val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
@@ -408,7 +417,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                             /// 启用音频
                             withAudioEnabled()
                         }
-                        camera = cameraProvider.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
+                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
                     }
                     CameraCaptureMode.ALL -> {
                         mImageCapture = Builder()
@@ -437,7 +446,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                             /// 启用音频
                             withAudioEnabled()
                         }
-                        camera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
+                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
                     }
                 }
             } catch(exc: Exception) {
@@ -450,7 +459,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     fun destroy() {
         Log.d("CameraManager", "Destory")
         closeVideoRecord()
-        camera = null
+        mCamera = null
         mImageCapture = null
         mVideoCapture = null
         mRecording = null
