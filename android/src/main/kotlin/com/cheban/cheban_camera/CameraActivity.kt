@@ -11,6 +11,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
@@ -25,6 +26,7 @@ import androidx.camera.video.*
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
 import java.io.*
 import java.util.*
@@ -33,7 +35,8 @@ import java.util.*
 class CameraActivity : AppCompatActivity() {
 
     companion object {
-        var result: io.flutter.plugin.common.MethodChannel.Result? = null
+        var result: MethodChannel.Result? = null
+        var channel: MethodChannel? = null
         var sourceType: Int = 3
         var faceType: Int = 1
         @JvmStatic
@@ -128,7 +131,6 @@ class CameraActivity : AppCompatActivity() {
                 }
                 mFlashSelectionBar.visibility = View.INVISIBLE
                 mFlashImageView.visibility = View.VISIBLE
-
             }
         })
 
@@ -195,15 +197,24 @@ class CameraActivity : AppCompatActivity() {
             override fun videoRecordingEnd(videoRecordEvent: VideoRecordEvent) {
                 recodingVideoEnd()
             }
+
+            override fun videoRecordingDurationUnqualified() {
+                channel?.invokeMethod("unqualifiedVideo", null)
+            }
+
             override fun finish(result: Map<String, Any>) {
-                Companion.result!!.success(result)
+                CameraActivity.result?.success(result)
                 finish()
             }
         })
 
         /// 配置视图的
         mFlashImageView.setOnClickListener { updateFlashSelectionBarVisibility() }
-        mBackImageView.setOnClickListener { finish() }
+        mBackImageView.setOnClickListener {
+            if (!mCameraManager.lock) {
+                finish()
+            }
+        }
         mSwitchImageView.setOnClickListener {
             mCameraManager.switchFacing()
         }
@@ -280,6 +291,8 @@ class CameraActivity : AppCompatActivity() {
         Log.d("CameraActivity", "Destory")
         mCameraManager.destroy()
         cameraActivity = null
+        result = null
+        channel = null
         recordTimer.cancel()
     }
 
@@ -309,7 +322,11 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun updateFlashSelectionBarVisibility() {
+        if (mCameraManager.lock) {
+            return
+        }
         when (mFlashSelectionBar.visibility) {
             View.INVISIBLE -> {
                 val alphaAnim = AlphaAnimation(0f, 1f)

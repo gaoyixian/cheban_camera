@@ -37,11 +37,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     private var mVideoCapture: VideoCapture<Recorder>? = null
     /// 录制
     private var mRecording: Recording? = null
+    private var mPendingRecording: PendingRecording? = null
+
     /// 相机
     private var camera: Camera? = null
 
     /// 监听回调
     private var mOnCameraEventListener: OnCameraEventListener? = null
+
+    /// 事件执行
+    var lock: Boolean = false;
 
     val orientationEventListener by lazy {
         object : OrientationEventListener(context) {
@@ -120,6 +125,10 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     fun capturePicture() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = mImageCapture ?: return
+        if (lock) {
+            return
+        }
+        lock = true;
         val destFile = File(context.filesDir, "picture_${System.currentTimeMillis()}.jpg")
 
         // Create output options object which contains file + metadata
@@ -131,6 +140,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             ContextCompat.getMainExecutor(context),
             object : OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
+                    lock = false
                     Log.e("capture picture", "Photo capture failed: ${exc.message}", exc)
                 }
 
@@ -156,6 +166,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                         dict["thumbnail_file_path"] = thumbnailPath
                         mOnCameraEventListener?.finish(dict)
                     }
+                    lock = false
                 }
             }
         )
@@ -163,20 +174,15 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
 
     /// 开始录制视频
     fun startVideoRecord() {
-        if (mVideoCapture == null) {
+        if (mVideoCapture == null || mPendingRecording == null) {
             return
         }
-        /// 构建视频文件路径
-        val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
-        /// 构建文件输出路径
-        val outputOptions = FileOutputOptions
-            .Builder(videoFile)
-            .build()
+        if (lock) {
+            return
+        }
+        lock = true
         /// 启动录制并且得到录制对象
-        mRecording = mVideoCapture!!.output.prepareRecording(context, outputOptions).apply {
-            /// 启用音频
-            withAudioEnabled()
-        }.start(ContextCompat.getMainExecutor(context)) { recordEvent ->
+        mRecording = mPendingRecording?.start(ContextCompat.getMainExecutor(context)) { recordEvent ->
             /// 获取录制状态
             when (recordEvent) {
                 is VideoRecordEvent.Start -> {
@@ -195,8 +201,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     } else {
 //                        Toast.makeText(context, "视频文件不存在", Toast.LENGTH_SHORT).show()
                     }
+                    lock = false
+                }
+                is VideoRecordEvent.Pause -> {
+
+                }
+                is VideoRecordEvent.Resume -> {
+
                 }
             }
+
         }
     }
 
@@ -212,8 +226,9 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         mMMR.setDataSource(context, videoUri)
         var mDuration =
             mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt()?.div(1000)
-        if (mDuration == null) {
-            mDuration = 0
+        if (mDuration == null || mDuration == 0) {
+            mOnCameraEventListener?.videoRecordingDurationUnqualified();
+            return
         }
         var videoWidth = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt()
         if (videoWidth == null) {
@@ -266,22 +281,26 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     fun focus(x: Float, y: Float, auto: Boolean) {
-        if (camera == null) {
+        if (camera == null || camera?.cameraInfo == null) {
             return
         }
+        if (lock) {
+            return
+        }
+        lock = true
         camera?.cameraControl?.cancelFocusAndMetering()
         val createPoint: MeteringPoint = if (auto) {
 
             val meteringPointFactory = DisplayOrientedMeteringPointFactory(
                 previewView.display,
                 camera?.cameraInfo!!,
-                previewView.width.toFloat()!!,
-                previewView.height.toFloat()!!
+                previewView.width.toFloat(),
+                previewView.height.toFloat()
             )
             meteringPointFactory.createPoint(x, y)
         } else {
             val meteringPointFactory = previewView.meteringPointFactory
-            meteringPointFactory.createPoint(x, y)!!
+            meteringPointFactory.createPoint(x, y)
         }
 
 
@@ -290,7 +309,6 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             .build()
 
         val future = camera?.cameraControl?.startFocusAndMetering(build)
-
 
         future?.addListener({
             try {
@@ -305,12 +323,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             } catch (e: Exception) {
                 Log.e("camera focus", "异常" + e.message)
             }
-
+            lock = false
         }, ContextCompat.getMainExecutor(context))
     }
 
     /// 绑定图片捕捉、视频捕捉
     fun bindCameraUseCases() {
+        if (lock) {
+            return
+        }
+        lock = true
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({
@@ -361,6 +383,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     CameraCaptureMode.MOVIE -> {
                         val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
+                        /// 构建视频文件路径
+                        val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
+                        /// 构建文件输出路径
+                        val outputOptions = FileOutputOptions
+                            .Builder(videoFile)
+                            .build()
+                        mPendingRecording = mVideoCapture!!.output.prepareRecording(context, outputOptions).apply {
+                            /// 启用音频
+                            withAudioEnabled()
+                        }
                         camera = cameraProvider.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
                     }
                     CameraCaptureMode.ALL -> {
@@ -380,18 +412,29 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                         }
                         val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
+                        /// 构建视频文件路径
+                        val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
+                        /// 构建文件输出路径
+                        val outputOptions = FileOutputOptions
+                            .Builder(videoFile)
+                            .build()
+                        mPendingRecording = mVideoCapture!!.output.prepareRecording(context, outputOptions).apply {
+                            /// 启用音频
+                            withAudioEnabled()
+                        }
                         camera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
                     }
                 }
             } catch(exc: Exception) {
                 Log.w("Bind Camera use case", exc.message.let { "$it" })
             }
-
+            lock = false
         }, ContextCompat.getMainExecutor(context))
     }
 
     fun destroy() {
         Log.d("CameraManager", "Destory")
+        closeVideoRecord()
         camera = null
         mImageCapture = null
         mVideoCapture = null

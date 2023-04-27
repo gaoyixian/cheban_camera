@@ -2,7 +2,9 @@ package com.cheban.cheban_camera
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -27,6 +29,7 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     channel.setMethodCallHandler(this)
   }
 
+  @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
@@ -35,6 +38,7 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val dict: Map<*, *> = call.arguments as Map<*, *>
       CameraActivity.sourceType =  (dict["source_type"] as Int)
       CameraActivity.faceType = (dict["face_type"] as Int)
+      CameraActivity.channel = channel
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
     } else if (call.method == "destory") {
