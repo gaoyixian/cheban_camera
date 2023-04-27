@@ -1,5 +1,6 @@
 package com.cheban.cheban_camera
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
@@ -50,6 +51,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
 
     val orientationEventListener by lazy {
         object : OrientationEventListener(context) {
+            @SuppressLint("RestrictedApi")
             override fun onOrientationChanged(orientation: Int) {
                 if (orientation == ORIENTATION_UNKNOWN) {
                     return
@@ -63,6 +65,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 }
 
                 mImageCapture?.targetRotation = rotation
+                mVideoCapture?.targetRotation = rotation
             }
         }
     }
@@ -230,6 +233,11 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             mOnCameraEventListener?.videoRecordingDurationUnqualified();
             return
         }
+        var videoRotation = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+        if (videoRotation == null) {
+            videoRotation = "0"
+            Log.d("CameraManager", videoRotation)
+        }
         var videoWidth = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt()
         if (videoWidth == null) {
             videoWidth = 0
@@ -237,6 +245,13 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         var videoHeight = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt()
         if (videoHeight == null) {
             videoHeight = 0
+        }
+        when (videoRotation) {
+            "90", "270" -> {
+                val tmp = videoWidth
+                videoWidth = videoHeight
+                videoHeight = tmp
+            }
         }
         val bmp = mMMR.frameAtTime ?: return
         val byteArrayOutputStream = ByteArrayOutputStream()
