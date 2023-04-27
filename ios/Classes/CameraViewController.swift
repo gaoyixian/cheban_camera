@@ -278,6 +278,11 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
+                            DispatchQueue.main.async {
+                                self.dismiss(animated: false)
+                            }
+                        })
                     } catch {
                         print("写入文件失败")
                     }
@@ -292,13 +297,15 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
+                            DispatchQueue.main.async {
+                                self.dismiss(animated: false)
+                            }
+                        })
                     } catch {
                         print("写入文件失败")
                     }
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                    self.dismiss(animated: false)
-                })
                 //                    let validVC = ImageViewController.init()
                 //                    let capturedData = content.asData
                 //                    let capturedImage = UIImage(data: capturedData!)!
@@ -340,8 +347,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                                self.dismiss(animated: false)
+                            DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
+                                DispatchQueue.main.async {
+                                    self.dismiss(animated: false)
+                                }
                             })
                         } catch {
                             print("写入文件失败")
