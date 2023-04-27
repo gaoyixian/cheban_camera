@@ -9,7 +9,7 @@ import UIKit
 import AVKit
 import Flutter
 
-class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBackDelegate, VideoViewBackDelegate {
+class CameraViewController: UIViewController, CameraManagerDelegate {
     
     var flutterResult : FlutterResult?
     var sourceType : Int = 3
@@ -251,7 +251,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     @objc func onBackPressed(sender: UIButton) {
         takeshotButton.invalidTimer()
         cameraManager.destroy()
-        self.dismiss(animated: false)
+        self.dismiss(animated: true)
     }
     
     func capturePicture() {
@@ -296,7 +296,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                         print("写入文件失败")
                     }
                 }
-                self.dismiss(animated: false)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                    self.dismiss(animated: false)
+                })
                 //                    let validVC = ImageViewController.init()
                 //                    let capturedData = content.asData
                 //                    let capturedImage = UIImage(data: capturedData!)!
@@ -338,7 +340,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            self.dismiss(animated: false)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                                self.dismiss(animated: false)
+                            })
                         } catch {
                             print("写入文件失败")
                         }
@@ -381,16 +385,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
     
     func isRecordEndTime(outputFileURL: URL) {
         print(outputFileURL)
-    }
-    
-    func imageViewCallBack() {
-        cameraManager.destroy()
-        self.dismiss(animated: false)
-    }
-    
-    func videoViewCallBack() {
-        cameraManager.destroy()
-        self.dismiss(animated: false)
     }
     
     deinit {
