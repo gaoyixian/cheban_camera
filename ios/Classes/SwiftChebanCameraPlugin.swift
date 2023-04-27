@@ -4,12 +4,15 @@ import AVFoundation
 
 //UIImagePickerControllerDelegate, UINavigationControllerDelegate
 public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "cheban_camera", binaryMessenger: registrar.messenger())
-    let instance = SwiftChebanCameraPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
     
+   static var channel: FlutterMethodChannel?
+    
+  public static func register(with registrar: FlutterPluginRegistrar) {
+    channel = FlutterMethodChannel(name: "cheban_camera", binaryMessenger: registrar.messenger())
+    let instance = SwiftChebanCameraPlugin()
+    registrar.addMethodCallDelegate(instance, channel: channel!)
+  }
+
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       if (call.method == "takePhotoAndVideo") {
           let dict = call.arguments as! NSDictionary

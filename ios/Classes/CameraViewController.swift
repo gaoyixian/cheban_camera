@@ -108,7 +108,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
             if (self.cameraManager.cameraOutputMode != CameraOutputMode.videoWithMic) {
                 self.cameraManager.cameraOutputMode = CameraOutputMode.videoWithMic
             }
-            self.recordMovie(isStart)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                self.recordMovie(isStart)
+            })
         }
         $0.takeshotUpdateRecordMovie = { [weak self] countdown in
             guard let self = self else { return }
@@ -322,6 +324,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate, ImageViewBa
                     if (image != nil) {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                         let duration = self.totalSecondForVideo(videoURL: videoURL!)
+                        if (duration == 0) {
+                            SwiftChebanCameraPlugin.channel?.invokeMethod("unqualifiedVideo", arguments: nil)
+                            return
+                        }
                         do {
                             try image!.pngData()?.write(to: URL(fileURLWithPath: path))
                             self.flutterResult!([

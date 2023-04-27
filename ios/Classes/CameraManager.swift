@@ -690,7 +690,6 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
                         imageCompletion(.failure(error))
                         return
                     }
-                    
                     guard let sample = sample else { imageCompletion(.failure(CaptureError.noSampleBuffer)); return }
                     if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(sample) {
                         imageCompletion(CaptureResult(imageData))
