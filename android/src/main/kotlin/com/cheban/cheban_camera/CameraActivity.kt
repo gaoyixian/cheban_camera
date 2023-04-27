@@ -204,7 +204,10 @@ class CameraActivity : AppCompatActivity() {
 
             override fun finish(result: Map<String, Any>) {
                 CameraActivity.result?.success(result)
-                finish()
+                GlobalScope.launch {
+                    delay(300)
+                    finish()
+                }
             }
         })
 
@@ -370,6 +373,7 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun finish() {
         super.finish()
+        overridePendingTransition(0, 0)
         mCameraManager.destroy()
     }
 
