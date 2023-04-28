@@ -308,7 +308,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                                 "origin_file_path": path,
                                 "thumbnail_file_path": "",
                             ])
-                            snapshotView?.removeFromSuperview()
                             self.dismiss(animated: false)
                         } catch {
                             snapshotView?.removeFromSuperview()
@@ -325,7 +324,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                                 "origin_file_path": path,
                                 "thumbnail_file_path": "",
                             ])
-                            snapshotView?.removeFromSuperview()
                             self.dismiss(animated: false)
                         } catch {
                             snapshotView?.removeFromSuperview()
