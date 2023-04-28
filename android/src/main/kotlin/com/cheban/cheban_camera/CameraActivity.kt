@@ -91,6 +91,8 @@ class CameraActivity : AppCompatActivity() {
 
     private val recordTimer: RecordTimer = RecordTimer()
 
+    private var callResult: Boolean = false
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -203,11 +205,12 @@ class CameraActivity : AppCompatActivity() {
             }
 
             override fun finish(result: Map<String, Any>) {
-                CameraActivity.result?.success(result)
-                GlobalScope.launch {
-                    delay(300)
-                    finish()
+                if (callResult == false) {
+                    callResult = true
+                    CameraActivity.result?.success(result)
                 }
+                finish()
+                overridePendingTransition(0, 0)
             }
         })
 
@@ -373,7 +376,10 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun finish() {
         super.finish()
-        overridePendingTransition(0, 0)
+        if (callResult == false) {
+            callResult = true
+            result?.success(null)
+        }
         mCameraManager.destroy()
     }
 

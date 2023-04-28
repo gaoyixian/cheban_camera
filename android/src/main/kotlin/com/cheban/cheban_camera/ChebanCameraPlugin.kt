@@ -1,5 +1,6 @@
 package com.cheban.cheban_camera
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -41,6 +42,13 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       CameraActivity.channel = channel
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
+      /// 是否执行动画
+      val animated = dict["animated"]
+      if (0 == animated) {
+        if (context is Activity) {
+          (context as Activity).overridePendingTransition(0, 0)
+        }
+      }
     } else if (call.method == "destory") {
 //      val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 //      var list = activityManager.getRunningTasks(1)
