@@ -144,8 +144,11 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         val destFile = File(context.filesDir, "picture_${System.currentTimeMillis()}.jpg")
 
         // Create output options object which contains file + metadata
+        var metadata = Metadata()
+        metadata.isReversedHorizontal = facing == CameraFacing.FRONT
         val outputOptions = OutputFileOptions
             .Builder(destFile)
+            .setMetadata(metadata)
             .build()
         imageCapture.takePicture(
             outputOptions,
