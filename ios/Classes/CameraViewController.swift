@@ -108,9 +108,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
             if (self.cameraManager.cameraOutputMode != CameraOutputMode.videoWithMic) {
                 self.cameraManager.cameraOutputMode = CameraOutputMode.videoWithMic
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                self.recordMovie(isStart)
-            })
+            self.recordMovie(isStart)
         }
         $0.takeshotUpdateRecordMovie = { [weak self] countdown in
             guard let self = self else { return }
@@ -134,6 +132,12 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         self.view.addSubview($0)
         return $0
     }(UILabel())
+        
+    lazy var backdropView: UIVisualEffectView = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview($0)
+        return $0
+    }(UIVisualEffectView(effect: UIBlurEffect(style: .dark)))
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -169,6 +173,8 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
             switchCameraButton.heightAnchor.constraint(equalToConstant: 48.fixed),
             tipLabel.bottomAnchor.constraint(equalTo: takeshotButton.topAnchor, constant: -42.fixed),
             tipLabel.centerXAnchor.constraint(equalTo: takeshotButton.centerXAnchor),
+            backdropView.widthAnchor.constraint(equalTo: self.view.widthAnchor),
+            backdropView.heightAnchor.constraint(equalTo: self.view.heightAnchor),
         ])
     }
     
@@ -183,11 +189,8 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         } else {
             cameraManager.cameraDevice = .front
         }
-        if (sourceType != 2) {
-            cameraManager.cameraOutputMode = .stillImage
-        } else {
-            cameraManager.cameraOutputMode = .videoWithMic
-        }
+        ///  默认必须是视频
+        cameraManager.cameraOutputMode = .videoWithMic
         if (sourceType == 1) {
             tipLabel.text = "点击拍照"
         }
@@ -206,6 +209,20 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
             guard let self = self else { return }
             if permissionGranted {
                 self.cameraManager.addPreviewLayerToView(self.previewLayer, newCameraOutputMode: self.cameraManager.cameraOutputMode)
+                var snapshotView: UIView? = nil
+                if let v = self.previewLayer.snapshotView(afterScreenUpdates: true) {
+                    snapshotView = v
+                    self.view.insertSubview(v, belowSubview: self.takeshotButton)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                    UIView.animate(withDuration: 0.25) {
+                        self.backdropView.alpha = 0
+                        snapshotView?.alpha = 0
+                    } completion: { result in
+                        snapshotView?.removeFromSuperview()
+                        self.backdropView.removeFromSuperview()
+                    }
+                })
             } else {
                 if #available(iOS 10.0, *) {
                     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
@@ -255,12 +272,18 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     }
     
     func capturePicture() {
+        var snapshotView: UIView? = nil
+        if let v = self.previewLayer.snapshotView(afterScreenUpdates: true) {
+            snapshotView = v
+            self.view.insertSubview(v, belowSubview: self.takeshotButton)
+        }
         cameraManager.capturePictureDataWithCompletion { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .failure:  self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
             case .success(let content):
                 guard let image = content.asImage else {
+                    snapshotView?.removeFromSuperview()
                     return
                 }
                 if (image.imageOrientation != .up) {
@@ -278,12 +301,11 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
-                            DispatchQueue.main.async {
-                                self.dismiss(animated: false)
-                            }
-                        })
+                        self.dismiss(animated: false) {
+                            snapshotView?.removeFromSuperview()
+                        }
                     } catch {
+                        snapshotView?.removeFromSuperview()
                         print("写入文件失败")
                     }
                 } else {
@@ -297,12 +319,11 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
-                            DispatchQueue.main.async {
-                                self.dismiss(animated: false)
-                            }
-                        })
+                        self.dismiss(animated: false) {
+                            snapshotView?.removeFromSuperview()
+                        }
                     } catch {
+                        snapshotView?.removeFromSuperview()
                         print("写入文件失败")
                     }
                 }
@@ -347,11 +368,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            DispatchQueue.global().asyncAfter(deadline: .now() + 0.45, execute: {
-                                DispatchQueue.main.async {
-                                    self.dismiss(animated: false)
-                                }
-                            })
+                            self.dismiss(animated: false)
                         } catch {
                             print("写入文件失败")
                         }
