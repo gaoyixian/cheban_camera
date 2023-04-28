@@ -301,9 +301,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        self.dismiss(animated: false) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
                             snapshotView?.removeFromSuperview()
-                        }
+                        })
+                        self.dismiss(animated: false)
                     } catch {
                         snapshotView?.removeFromSuperview()
                         print("写入文件失败")
@@ -319,9 +320,10 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        self.dismiss(animated: false) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
                             snapshotView?.removeFromSuperview()
-                        }
+                        })
+                        self.dismiss(animated: false)
                     } catch {
                         snapshotView?.removeFromSuperview()
                         print("写入文件失败")
