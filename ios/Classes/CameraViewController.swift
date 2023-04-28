@@ -274,23 +274,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     
     func capturePicture() {
         var snapshotView: UIView? = nil
-        let blackDimmer = UIView()
-        blackDimmer.backgroundColor = UIColor.black
-        blackDimmer.alpha = 0
         if let v = self.previewLayer.snapshotView(afterScreenUpdates: true) {
             snapshotView = v
             self.view.insertSubview(v, belowSubview: self.takeshotButton)
-            blackDimmer.frame = v.bounds
-            v.addSubview(blackDimmer)
-            UIView.animate(withDuration: 0.08) {
-                blackDimmer.alpha = 1
-            } completion: { _ in
-                UIView.animate(withDuration: 0.08) {
-                    blackDimmer.alpha = 0
-                } completion: { _ in
-                    blackDimmer.removeFromSuperview()
-                }
-            }
         }
         if (self.cameraManager.cameraOutputMode != CameraOutputMode.stillImage) {
             self.cameraManager.cameraOutputMode = CameraOutputMode.stillImage;
@@ -301,7 +287,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                 switch result {
                 case .failure:
                     snapshotView?.removeFromSuperview()
-                    blackDimmer.removeFromSuperview()
                     self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
                 case .success(let content):
                     guard let image = content.asImage else {
