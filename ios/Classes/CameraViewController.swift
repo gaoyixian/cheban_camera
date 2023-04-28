@@ -295,67 +295,69 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         if (self.cameraManager.cameraOutputMode != CameraOutputMode.stillImage) {
             self.cameraManager.cameraOutputMode = CameraOutputMode.stillImage;
         }
-        cameraManager.capturePictureDataWithCompletion { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .failure:
-                snapshotView?.removeFromSuperview()
-                blackDimmer.removeFromSuperview()
-                self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
-            case .success(let content):
-                guard let image = content.asImage else {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+            self.cameraManager.capturePictureDataWithCompletion { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .failure:
                     snapshotView?.removeFromSuperview()
-                    return
-                }
-                if (image.imageOrientation != .up) {
-                    UIGraphicsBeginImageContext(image.size)
-                    image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
-                    let drawImg = UIGraphicsGetImageFromCurrentImageContext()!
-                    UIGraphicsEndImageContext()
-                    let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
-                    do {
-                        try drawImg.pngData()?.write(to: URL(fileURLWithPath: path))
-                        self.flutterResult!([
-                            "width": Int(drawImg.size.width),
-                            "height": Int(drawImg.size.height),
-                            "type": 1,
-                            "origin_file_path": path,
-                            "thumbnail_file_path": "",
-                        ])
+                    blackDimmer.removeFromSuperview()
+                    self.cameraManager.showErrorBlock("Error occurred", "Cannot save picture.")
+                case .success(let content):
+                    guard let image = content.asImage else {
                         snapshotView?.removeFromSuperview()
-                        self.dismiss(animated: false)
-                    } catch {
-                        snapshotView?.removeFromSuperview()
-                        print("写入文件失败")
+                        return
                     }
-                } else {
-                    let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
-                    do {
-                        try image.pngData()?.write(to: URL(fileURLWithPath: path))
-                        self.flutterResult!([
-                            "width": Int(image.size.width),
-                            "height": Int(image.size.height),
-                            "type": 1,
-                            "origin_file_path": path,
-                            "thumbnail_file_path": "",
-                        ])
-                        snapshotView?.removeFromSuperview()
-                        self.dismiss(animated: false)
-                    } catch {
-                        snapshotView?.removeFromSuperview()
-                        print("写入文件失败")
+                    if (image.imageOrientation != .up) {
+                        UIGraphicsBeginImageContext(image.size)
+                        image.draw(in: CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
+                        let drawImg = UIGraphicsGetImageFromCurrentImageContext()!
+                        UIGraphicsEndImageContext()
+                        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+                        do {
+                            try drawImg.pngData()?.write(to: URL(fileURLWithPath: path))
+                            self.flutterResult!([
+                                "width": Int(drawImg.size.width),
+                                "height": Int(drawImg.size.height),
+                                "type": 1,
+                                "origin_file_path": path,
+                                "thumbnail_file_path": "",
+                            ])
+                            snapshotView?.removeFromSuperview()
+                            self.dismiss(animated: false)
+                        } catch {
+                            snapshotView?.removeFromSuperview()
+                            print("写入文件失败")
+                        }
+                    } else {
+                        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+                        do {
+                            try image.pngData()?.write(to: URL(fileURLWithPath: path))
+                            self.flutterResult!([
+                                "width": Int(image.size.width),
+                                "height": Int(image.size.height),
+                                "type": 1,
+                                "origin_file_path": path,
+                                "thumbnail_file_path": "",
+                            ])
+                            snapshotView?.removeFromSuperview()
+                            self.dismiss(animated: false)
+                        } catch {
+                            snapshotView?.removeFromSuperview()
+                            print("写入文件失败")
+                        }
                     }
+                    //                    let validVC = ImageViewController.init()
+                    //                    let capturedData = content.asData
+                    //                    let capturedImage = UIImage(data: capturedData!)!
+                    //                    validVC.image = capturedImage
+                    //                    validVC.flutterResult = self.flutterResult
+                    //                    validVC.modalPresentationStyle = .fullScreen
+                    //                    validVC.imageViewBackDelegate = self
+                    //                    self.present(validVC, animated: true)
                 }
-                //                    let validVC = ImageViewController.init()
-                //                    let capturedData = content.asData
-                //                    let capturedImage = UIImage(data: capturedData!)!
-                //                    validVC.image = capturedImage
-                //                    validVC.flutterResult = self.flutterResult
-                //                    validVC.modalPresentationStyle = .fullScreen
-                //                    validVC.imageViewBackDelegate = self
-                //                    self.present(validVC, animated: true)
             }
-        }
+        })
     }
     
     func recordMovie(_ isStart: Bool) {
