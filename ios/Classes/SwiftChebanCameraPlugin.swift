@@ -24,7 +24,7 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
           cameraVC.flutterResult = result
           cameraVC.sourceType = sourceType
           cameraVC.faceType = faceType
-          cameraVC.modalPresentationStyle = .fullScreen
+          cameraVC.modalPresentationStyle = .overFullScreen
           if let anim = animated, anim == 1 {
               UIApplication.shared.keyWindow!.rootViewController!.present(cameraVC, animated: true)
           } else {
