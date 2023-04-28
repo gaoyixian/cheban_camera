@@ -408,7 +408,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                         mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
                     }
                     CameraCaptureMode.MOVIE -> {
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HD)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         /// 构建视频文件路径
                         val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
@@ -437,7 +437,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                                 mImageCapture?.flashMode = FLASH_MODE_ON
                             }
                         }
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HD)).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         /// 构建视频文件路径
                         val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
@@ -462,7 +462,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     fun destroy() {
         Log.d("CameraManager", "Destory")
         closeVideoRecord()
-        mCamera = null
+        previewView.removeAllViews()
         mImageCapture = null
         mVideoCapture = null
         mRecording = null
