@@ -29,7 +29,7 @@ abstract class ChebanCameraPlatform extends PlatformInterface {
   }
 
   Future<CameraModel?> pickCamera(
-      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack}) {
+      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack, int animated = 1}) {
     throw UnimplementedError('pickCamera() has not been implemented.');
   }
 

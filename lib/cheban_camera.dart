@@ -8,9 +8,9 @@ class ChebanCamera {
   }
 
   Future<CameraModel?> pickCamera(
-      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack}) {
+      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack, int animated = 1}) {
     return ChebanCameraPlatform.instance
-        .pickCamera(sourceType: sourceType, faceType: faceType);
+        .pickCamera(sourceType: sourceType, faceType: faceType, animated: animated);
   }
 
   Future<void> destory() {
