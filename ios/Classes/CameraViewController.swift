@@ -268,6 +268,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     @objc func onBackPressed(sender: UIButton) {
         takeshotButton.invalidTimer()
         cameraManager.destroy()
+        self.flutterResult!(nil)
         self.dismiss(animated: true)
     }
     
