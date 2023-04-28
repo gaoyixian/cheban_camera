@@ -47,8 +47,7 @@ class CameraActivity : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onTick(p0: Long) {
-            val value = 20 - ((p0 / 1000) + 1)
-            Log.w("RecordTimer", "计时器运行中 ------- ${(p0 / 1000)}")
+            val value = 20 - countdownTimer
             runOnUiThread {
                 if (value >= 0) {
                     if (value < 10) {
@@ -58,6 +57,7 @@ class CameraActivity : AppCompatActivity() {
                     }
                     mProgressCircular.setProgress((value / 20f * 100).toInt(), true)
                 }
+                countdownTimer--
             }
         }
 
@@ -66,6 +66,7 @@ class CameraActivity : AppCompatActivity() {
             mTimeTextView.text = "00:20"
             mProgressCircular.setProgress((100).toInt(), true)
             mCameraManager.closeVideoRecord()
+            countdownTimer = 20
         }
     }
 
@@ -83,6 +84,8 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var mRecordImageView: ImageView
     private lateinit var mBackdropView: View
     private lateinit var mFocusImageView: ImageView
+
+    private var countdownTimer: Int = 20
 
     /// 相机预览视图
     private lateinit var mPreviewView: PreviewView
@@ -319,6 +322,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun recodingVideoEnd() {
         recordTimer.cancel()
+        countdownTimer = 20
         runOnUiThread {
             val layoutParams = mCaptureView.layoutParams
             layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, resources.displayMetrics).toInt()
