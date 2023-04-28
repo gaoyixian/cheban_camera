@@ -98,24 +98,24 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     lazy var takeshotButton: TakeshotButton = {
         $0.takeshotShouldCapture = { [weak self] in
             guard let self = self else { return }
-            if (self.cameraManager.cameraOutputMode != CameraOutputMode.stillImage) {
-                self.cameraManager.cameraOutputMode = CameraOutputMode.stillImage;
+            if (self.sourceType == 1 || self.sourceType == 3) {
+                self.capturePicture()
             }
-            self.capturePicture()
         }
         $0.takeshotShouldRecordMovie = { [weak self] isStart in
             guard let self = self else { return }
-            if (self.cameraManager.cameraOutputMode != CameraOutputMode.videoWithMic) {
-                self.cameraManager.cameraOutputMode = CameraOutputMode.videoWithMic
+            if (self.sourceType == 2 || self.sourceType == 3) {
+                self.recordMovie(isStart)
             }
-            self.recordMovie(isStart)
         }
         $0.takeshotUpdateRecordMovie = { [weak self] countdown in
             guard let self = self else { return }
-            if (countdown < 10) {
-                self.tipLabel.text = "00:00:0" + String(countdown)
-            } else {
-                self.tipLabel.text = "00:00:" + String(countdown)
+            if (self.sourceType == 2 || self.sourceType == 3) {
+                if (countdown < 10) {
+                    self.tipLabel.text = "00:00:0" + String(countdown)
+                } else {
+                    self.tipLabel.text = "00:00:" + String(countdown)
+                }
             }
         }
         $0.translatesAutoresizingMaskIntoConstraints = false
@@ -278,6 +278,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
             snapshotView = v
             self.view.insertSubview(v, belowSubview: self.takeshotButton)
         }
+        if (self.cameraManager.cameraOutputMode != CameraOutputMode.stillImage) {
+            self.cameraManager.cameraOutputMode = CameraOutputMode.stillImage;
+        }
         cameraManager.capturePictureDataWithCompletion { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -302,9 +305,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                            snapshotView?.removeFromSuperview()
-                        })
+                        snapshotView?.removeFromSuperview()
                         self.dismiss(animated: false)
                     } catch {
                         snapshotView?.removeFromSuperview()
@@ -321,9 +322,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
-                            snapshotView?.removeFromSuperview()
-                        })
+                        snapshotView?.removeFromSuperview()
                         self.dismiss(animated: false)
                     } catch {
                         snapshotView?.removeFromSuperview()
@@ -344,6 +343,9 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     
     func recordMovie(_ isStart: Bool) {
         if isStart {
+            if (self.cameraManager.cameraOutputMode != CameraOutputMode.videoWithMic) {
+                self.cameraManager.cameraOutputMode = CameraOutputMode.videoWithMic
+            }
             performHideTip(false, false)
             cameraManager.startRecordingVideo()
         } else {
