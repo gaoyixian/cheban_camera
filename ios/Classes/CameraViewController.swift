@@ -366,7 +366,6 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                         let duration = self.totalSecondForVideo(videoURL: videoURL!)
                         if (duration == 0) {
-                            SwiftChebanCameraPlugin.channel?.invokeMethod("unqualifiedVideo", arguments: nil)
                             return
                         }
                         do {

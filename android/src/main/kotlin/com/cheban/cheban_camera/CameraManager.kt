@@ -3,6 +3,7 @@ package com.cheban.cheban_camera
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.hardware.display.DisplayManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -70,6 +71,24 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             }
         }
     }
+
+    val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayChanged(displayId: Int) {
+            @SuppressLint("RestrictedApi")
+            if (previewView.display.displayId == displayId) {
+                val rotation = previewView.display.rotation
+                mImageCapture?.targetRotation = rotation
+                mVideoCapture?.targetRotation = rotation
+            }
+        }
+
+        override fun onDisplayAdded(displayId: Int) {
+        }
+
+        override fun onDisplayRemoved(displayId: Int) {
+        }
+    }
+
 
     /// 摄像头方向
     var facing: CameraFacing = CameraFacing.BACK
@@ -242,7 +261,6 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         var mDuration =
             mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt()?.div(1000)
         if (mDuration == null || mDuration == 0) {
-            mOnCameraEventListener?.videoRecordingDurationUnqualified();
             return
         }
         var videoRotation = mMMR.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)

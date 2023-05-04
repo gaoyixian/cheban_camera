@@ -2,8 +2,10 @@ package com.cheban.cheban_camera
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -11,7 +13,6 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
@@ -36,7 +37,6 @@ class CameraActivity : AppCompatActivity() {
 
     companion object {
         var result: MethodChannel.Result? = null
-        var channel: MethodChannel? = null
         var sourceType: Int = 3
         var faceType: Int = 1
         @JvmStatic
@@ -139,7 +139,7 @@ class CameraActivity : AppCompatActivity() {
             }
         })
 
-        mBackdropView.setOnTouchListener { p0, p1 ->
+        mBackdropView.setOnTouchListener { _, p1 ->
             mCameraManager.focus(p1.x, p1.y, true)
             /// 布局是用relativeLayout
             val layoutParams = mFocusImageView.layoutParams as RelativeLayout.LayoutParams
@@ -203,12 +203,8 @@ class CameraActivity : AppCompatActivity() {
                 recodingVideoEnd()
             }
 
-            override fun videoRecordingDurationUnqualified() {
-                channel?.invokeMethod("unqualifiedVideo", null)
-            }
-
             override fun finish(result: Map<String, Any>) {
-                if (callResult == false) {
+                if (!callResult) {
                     callResult = true
                     CameraActivity.result?.success(result)
                 }
@@ -261,38 +257,43 @@ class CameraActivity : AppCompatActivity() {
         }
         mCameraManager.bindCameraUseCases()
         /// 延迟处理的
-        GlobalScope.launch {
-            delay(5000)
-            runOnUiThread {
-                if (mTimeTextView.visibility == View.INVISIBLE) {
-                    val alphaAnim = AlphaAnimation(1f, 0f)
-                    alphaAnim.duration = animationDurationMillis
-                    alphaAnim.setAnimationListener(object : AnimationListener {
-                        override fun onAnimationEnd(p0: Animation?) {
-                            mTipTextView.visibility = View.GONE
-                        }
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    if (mTimeTextView.visibility == View.INVISIBLE) {
+                        val alphaAnim = AlphaAnimation(1f, 0f)
+                        alphaAnim.duration = animationDurationMillis
+                        alphaAnim.setAnimationListener(object : AnimationListener {
+                            override fun onAnimationEnd(p0: Animation?) {
+                                mTipTextView.visibility = View.GONE
+                            }
 
-                        override fun onAnimationRepeat(p0: Animation?) {
-                        }
+                            override fun onAnimationRepeat(p0: Animation?) {
+                            }
 
-                        override fun onAnimationStart(p0: Animation?) {
-                        }
-                    })
-                    mTipTextView.startAnimation(alphaAnim)
+                            override fun onAnimationStart(p0: Animation?) {
+                            }
+                        })
+                        mTipTextView.startAnimation(alphaAnim)
+                    }
                 }
             }
-        }
+        }, 5000)
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStart() {
         super.onStart()
+        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.registerDisplayListener(mCameraManager.displayListener, null)
         mCameraManager.orientationEventListener.enable()
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStop() {
         super.onStop()
+        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.unregisterDisplayListener(mCameraManager.displayListener)
         mCameraManager.orientationEventListener.disable()
     }
 
@@ -303,7 +304,6 @@ class CameraActivity : AppCompatActivity() {
         mCameraManager.destroy()
         cameraActivity = null
         result = null
-        channel = null
         recordTimer.cancel()
     }
 
@@ -380,7 +380,7 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun finish() {
         super.finish()
-        if (callResult == false) {
+        if (!callResult) {
             callResult = true
             result?.success(null)
         }
