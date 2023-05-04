@@ -15,6 +15,8 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     var sourceType : Int = 3
     var faceType: Int = 1
     
+    var delayDismissTime: Double = 0.1
+    
     let cameraManager = CameraManager()
     var cameraTabBar: CameraTabBar?
     
@@ -307,7 +309,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + self.delayDismissTime, execute: {
                             self.dismiss(animated: false)
                         })
                     } catch {
@@ -325,7 +327,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             "origin_file_path": path,
                             "thumbnail_file_path": "",
                         ])
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + self.delayDismissTime, execute: {
                             self.dismiss(animated: false)
                         })
                     } catch {
@@ -377,7 +379,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                                 "thumbnail_file_path": path,
                                 "duration": duration,
                             ])
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + self.delayDismissTime, execute: {
                                 self.dismiss(animated: false)
                             })
                         } catch {
