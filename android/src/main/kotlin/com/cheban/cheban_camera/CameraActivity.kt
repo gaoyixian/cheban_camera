@@ -284,16 +284,12 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStart() {
         super.onStart()
-        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        displayManager.registerDisplayListener(mCameraManager.displayListener, null)
         mCameraManager.orientationEventListener.enable()
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onStop() {
         super.onStop()
-        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        displayManager.unregisterDisplayListener(mCameraManager.displayListener)
         mCameraManager.orientationEventListener.disable()
     }
 

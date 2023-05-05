@@ -72,24 +72,6 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         }
     }
 
-    val displayListener = object : DisplayManager.DisplayListener {
-        override fun onDisplayChanged(displayId: Int) {
-            @SuppressLint("RestrictedApi")
-            if (previewView.display.displayId == displayId) {
-                val rotation = previewView.display.rotation
-                mImageCapture?.targetRotation = rotation
-                mVideoCapture?.targetRotation = rotation
-            }
-        }
-
-        override fun onDisplayAdded(displayId: Int) {
-        }
-
-        override fun onDisplayRemoved(displayId: Int) {
-        }
-    }
-
-
     /// 摄像头方向
     var facing: CameraFacing = CameraFacing.BACK
         set(value) {
