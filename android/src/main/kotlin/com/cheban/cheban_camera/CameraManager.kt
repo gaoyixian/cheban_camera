@@ -48,6 +48,8 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     /// 监听回调
     private var mOnCameraEventListener: OnCameraEventListener? = null
 
+    private var cameraProvider: ProcessCameraProvider? = null
+
     /// 事件执行
     var lock: Boolean = false;
 
@@ -368,7 +370,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             val viewSize = Size(displayMetrics.widthPixels, displayMetrics.heightPixels)
 
             // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
 
             // Preview
             val preview = Preview.Builder()
@@ -388,7 +390,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     }
                 }
                 // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
+                cameraProvider?.unbindAll()
                 when (captureMode) {
                     CameraCaptureMode.PICTURE -> {
                         mImageCapture = Builder()
@@ -405,7 +407,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                                 mImageCapture?.flashMode = FLASH_MODE_ON
                             }
                         }
-                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
+                        mCamera = cameraProvider?.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
                     }
                     CameraCaptureMode.MOVIE -> {
                         val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HD)).build()
@@ -420,7 +422,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                             /// 启用音频
                             withAudioEnabled()
                         }
-                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
+                        mCamera = cameraProvider?.bindToLifecycle(context, cameraSelector, mVideoCapture!!, preview)
                     }
                     CameraCaptureMode.ALL -> {
                         mImageCapture = Builder()
@@ -449,7 +451,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                             /// 启用音频
                             withAudioEnabled()
                         }
-                        mCamera = cameraProvider.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
+                        mCamera = cameraProvider?.bindToLifecycle(context, cameraSelector, mImageCapture!!, mVideoCapture!!, preview)
                     }
                 }
             } catch(exc: Exception) {
@@ -463,9 +465,13 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         Log.d("CameraManager", "Destory")
         closeVideoRecord()
         previewView.removeAllViews()
+        cameraProvider?.unbindAll()
         mImageCapture = null
         mVideoCapture = null
         mRecording = null
+        mPendingRecording = null
+        mCamera = null
+        cameraProvider = null
     }
 
 }
