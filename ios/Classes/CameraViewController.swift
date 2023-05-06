@@ -15,7 +15,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     var sourceType : Int = 3
     var faceType: Int = 1
     
-    var delayDismissTime: Double = 0.1
+    var delayDismissTime: Double = 0.25
     
     let cameraManager = CameraManager()
     var cameraTabBar: CameraTabBar?
