@@ -208,8 +208,13 @@ class CameraActivity : AppCompatActivity() {
                     callResult = true
                     CameraActivity.result?.success(result)
                 }
-                finish()
-                overridePendingTransition(0,0)
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(250)
+                    runOnUiThread {
+                        finish()
+                        overridePendingTransition(0,0)
+                    }
+                }
             }
         })
         mCameraManager.setCaptureListener(object : OnCaptureListener {
@@ -218,8 +223,13 @@ class CameraActivity : AppCompatActivity() {
                     callResult = true
                     CameraActivity.result?.success(result)
                 }
-                finish()
-                overridePendingTransition(0,0)
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(250)
+                    runOnUiThread {
+                        finish()
+                        overridePendingTransition(0,0)
+                    }
+                }
             }
         })
 
@@ -267,28 +277,27 @@ class CameraActivity : AppCompatActivity() {
         }
         mCameraManager.bindCameraUseCases()
         /// 延迟处理的
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    if (mTimeTextView.visibility == View.INVISIBLE) {
-                        val alphaAnim = AlphaAnimation(1f, 0f)
-                        alphaAnim.duration = animationDurationMillis
-                        alphaAnim.setAnimationListener(object : AnimationListener {
-                            override fun onAnimationEnd(p0: Animation?) {
-                                mTipTextView.visibility = View.GONE
-                            }
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(5000)
+            runOnUiThread {
+                if (mTimeTextView.visibility == View.INVISIBLE) {
+                    val alphaAnim = AlphaAnimation(1f, 0f)
+                    alphaAnim.duration = animationDurationMillis
+                    alphaAnim.setAnimationListener(object : AnimationListener {
+                        override fun onAnimationEnd(p0: Animation?) {
+                            mTipTextView.visibility = View.GONE
+                        }
 
-                            override fun onAnimationRepeat(p0: Animation?) {
-                            }
+                        override fun onAnimationRepeat(p0: Animation?) {
+                        }
 
-                            override fun onAnimationStart(p0: Animation?) {
-                            }
-                        })
-                        mTipTextView.startAnimation(alphaAnim)
-                    }
+                        override fun onAnimationStart(p0: Animation?) {
+                        }
+                    })
+                    mTipTextView.startAnimation(alphaAnim)
                 }
             }
-        }, 5000)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
