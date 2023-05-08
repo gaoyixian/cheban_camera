@@ -208,8 +208,14 @@ class CameraActivity : AppCompatActivity() {
                     callResult = true
                     CameraActivity.result?.success(result)
                 }
-                finish()
-                overridePendingTransition(0, 0)
+                Timer().schedule(object: TimerTask() {
+                    override fun run() {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            finish()
+                            overridePendingTransition(0,0)
+                        }
+                    }
+                }, 500)
             }
         })
 
