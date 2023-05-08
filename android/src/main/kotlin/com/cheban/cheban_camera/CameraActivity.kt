@@ -194,28 +194,32 @@ class CameraActivity : AppCompatActivity() {
             mCameraManager.captureMode = CameraCaptureMode.ALL
         }
 
-        mCameraManager.setListener(object : OnCameraEventListener {
-            override fun videoRecordingStart(videoRecordEvent: VideoRecordEvent) {
+        mCameraManager.setRecordListener(object : OnRecordListener {
+            override fun start(event: VideoRecordEvent) {
                 recordingVideoStart()
             }
 
-            override fun videoRecordingEnd(videoRecordEvent: VideoRecordEvent) {
+            override fun stop(event: VideoRecordEvent) {
                 recodingVideoEnd()
             }
 
-            override fun finish(result: Map<String, Any>) {
+            override fun takeVideo(result: Map<String, Any>) {
                 if (!callResult) {
                     callResult = true
                     CameraActivity.result?.success(result)
                 }
-                Timer().schedule(object: TimerTask() {
-                    override fun run() {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            finish()
-                            overridePendingTransition(0,0)
-                        }
-                    }
-                }, 1500)
+                finish()
+                overridePendingTransition(0,0)
+            }
+        })
+        mCameraManager.setCaptureListener(object : OnCaptureListener {
+            override fun takePhoto(result: Map<String, Any>) {
+                if (!callResult) {
+                    callResult = true
+                    CameraActivity.result?.success(result)
+                }
+                finish()
+                overridePendingTransition(0,0)
             }
         })
 

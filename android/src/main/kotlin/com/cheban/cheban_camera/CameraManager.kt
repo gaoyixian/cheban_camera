@@ -42,16 +42,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     private var mRecording: Recording? = null
     private var mPendingRecording: PendingRecording? = null
 
+    private var cameraProvider: ProcessCameraProvider? = null
     /// 相机
     private var mCamera: Camera? = null
 
-    /// 监听回调
-    private var mOnCameraEventListener: OnCameraEventListener? = null
-
-    private var cameraProvider: ProcessCameraProvider? = null
-
-    /// 事件执行
     var lock: Boolean = false;
+
+    /// 录制
+    private var mOnRecordListener: OnRecordListener? = null
+    /// 照片
+    private var mOnCaptureListener: OnCaptureListener? = null
 
     val orientationEventListener by lazy {
         object : OrientationEventListener(context) {
@@ -113,9 +113,12 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         this.previewView = previewView
     }
 
-    /// 设置监听
-    fun setListener(onCameraEventListener: OnCameraEventListener) {
-        mOnCameraEventListener = onCameraEventListener
+    fun setRecordListener(onRecordListener: OnRecordListener) {
+        mOnRecordListener = onRecordListener
+    }
+
+    fun setCaptureListener(onCaptureListener: OnCaptureListener) {
+        mOnCaptureListener = onCaptureListener
     }
 
     fun switchFacing() {
@@ -182,7 +185,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                             dict["origin_file_path"] = originPath
                         }
                         dict["thumbnail_file_path"] = thumbnailPath
-                        mOnCameraEventListener?.finish(dict)
+                        mOnCaptureListener?.takePhoto(dict)
                     }
                     lock = false
                 }
@@ -206,16 +209,16 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 is VideoRecordEvent.Start -> {
                     /// 开启录制
                     Log.w("RECODING STATUS", "start recoding")
-                    mOnCameraEventListener?.videoRecordingStart(recordEvent)
+                    mOnRecordListener?.start(recordEvent)
                 }
                 is VideoRecordEvent.Finalize -> {
                     Log.w("RECODING STATUS", "finalize recoding")
-                    mOnCameraEventListener?.videoRecordingEnd(recordEvent)
+                    mOnRecordListener?.stop(recordEvent)
                     /// 再做一次关闭录制，安全第一
                     closeVideoRecord()
                     /// 判断视频文件是否存在
                     if (recordEvent.outputResults.outputUri.toString().isNotEmpty() && recordEvent.outputResults.outputUri.toFile().exists()) {
-                        finishRecordVideo(recordEvent.outputResults.outputUri)
+                        takeVideo(recordEvent.outputResults.outputUri)
                     } else {
 //                        Toast.makeText(context, "视频文件不存在", Toast.LENGTH_SHORT).show()
                     }
@@ -238,7 +241,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
     }
 
     /// 完成视频录制
-    private fun finishRecordVideo(videoUri: Uri) {
+    private fun takeVideo(videoUri: Uri) {
         /// 获取第一帧 存入本地当作缩略图
         val mMMR = MediaMetadataRetriever()
         mMMR.setDataSource(context, videoUri)
@@ -286,7 +289,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             )
             dict["origin_file_path"] = originPath
             dict["thumbnail_file_path"] = thumbnailPath
-            mOnCameraEventListener?.finish(dict)
+            mOnRecordListener?.takeVideo(dict)
         } else {
             Toast.makeText(context, "录像失败，请重试", Toast.LENGTH_SHORT).show()
         }
