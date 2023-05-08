@@ -212,7 +212,6 @@ class CameraActivity : AppCompatActivity() {
                     delay(250)
                     runOnUiThread {
                         finish()
-                        overridePendingTransition(0,0)
                     }
                 }
             }
@@ -227,7 +226,6 @@ class CameraActivity : AppCompatActivity() {
                     delay(250)
                     runOnUiThread {
                         finish()
-                        overridePendingTransition(0,0)
                     }
                 }
             }
@@ -395,6 +393,7 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun finish() {
         super.finish()
+        overridePendingTransition(0,0)
         /// 手势返回需要判断下是否有callback
         if (!callResult) {
             callResult = true
