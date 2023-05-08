@@ -215,7 +215,7 @@ class CameraActivity : AppCompatActivity() {
                             overridePendingTransition(0,0)
                         }
                     }
-                }, 500)
+                }, 1500)
             }
         })
 
