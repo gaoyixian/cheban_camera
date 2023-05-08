@@ -386,6 +386,7 @@ class CameraActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun finish() {
         super.finish()
+        /// 手势返回需要判断下是否有callback
         if (!callResult) {
             callResult = true
             result?.success(null)
