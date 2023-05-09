@@ -38,10 +38,9 @@ class _MyAppState extends State<MyApp> {
       if (_cameraModel!.type == CameraTypeVideo) {
         videoPlayerController =
             VideoPlayerController.file(File(_cameraModel!.origin_file_path));
-        videoPlayerController!.initialize();
-        videoPlayerController!
-          ..setLooping(true)
-          ..play();
+        await videoPlayerController!.initialize();
+        await videoPlayerController!.setLooping(true);
+        await videoPlayerController!.play();
       }
     }
     if (mounted) {
@@ -56,43 +55,57 @@ class _MyAppState extends State<MyApp> {
           appBar: AppBar(
             title: const Text('Plugin example app'),
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+          body: Stack(
             children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  if (_cameraModel != null)
+                    Image.file(
+                      File(_cameraModel!.type == CameraTypeImage
+                          ? _cameraModel!.origin_file_path
+                          : _cameraModel!.thumbnail_file_path),
+                      width: 300,
+                      height:
+                          (_cameraModel!.height * 300 / _cameraModel!.height),
+                    ),
+                  const SizedBox(height: 50),
+                  TextButton(
+                    onPressed: _onTackPhoto,
+                    child: const Text(
+                      '拍照',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               if (_cameraModel != null)
                 if (_cameraModel!.type == CameraTypeVideo &&
                     videoPlayerController != null)
-                  GestureDetector(
-                    onTap: () {
-                      if (videoPlayerController != null) {
-                        videoPlayerController!.play();
-                      }
-                    },
-                    child: AspectRatio(
-                      aspectRatio: videoPlayerController!.value.aspectRatio,
-                      child:
-                          Container(child: VideoPlayer(videoPlayerController!)),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      child: GestureDetector(
+                        onTap: () {
+                          _cameraModel = null;
+                          setState(() {});
+                        },
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio:
+                                videoPlayerController!.value.aspectRatio,
+                            child: VideoPlayer(videoPlayerController!),
+                          ),
+                        ),
+                      ),
                     ),
                   )
-                else
-                  Image.file(
-                    File(_cameraModel!.type == CameraTypeImage
-                        ? _cameraModel!.origin_file_path
-                        : _cameraModel!.thumbnail_file_path),
-                    width: 300,
-                    height: (_cameraModel!.height * 300 / _cameraModel!.height),
-                  ),
-              const SizedBox(height: 50),
-              TextButton(
-                onPressed: _onTackPhoto,
-                child: const Text(
-                  '拍照',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
             ],
           )),
     );

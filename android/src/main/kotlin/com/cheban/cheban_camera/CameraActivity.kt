@@ -13,11 +13,13 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import android.widget.RelativeLayout.LayoutParams
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,7 @@ import androidx.camera.core.ImageCapture.*
 import androidx.camera.video.*
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.view.drawToBitmap
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
@@ -84,6 +87,8 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var mRecordImageView: ImageView
     private lateinit var mBackdropView: View
     private lateinit var mFocusImageView: ImageView
+    private lateinit var mScreenshotRelativeLayout: RelativeLayout
+    private lateinit var mScreenshotImageView: ImageView
 
     private var countdownTimer: Int = 20
 
@@ -115,6 +120,8 @@ class CameraActivity : AppCompatActivity() {
         mRecordImageView = findViewById(R.id.iv_recording)
         mFlashSelectionBar = findViewById(R.id.view_flash_modes)
         mFocusImageView = findViewById(R.id.focus)
+        mScreenshotRelativeLayout = findViewById(R.id.rl_screenshot)
+        mScreenshotImageView = findViewById(R.id.iv_screenshot)
         mFlashSelectionBar.setListener(object : OnFlashSelectionListener {
             override fun callback(value: Int) {
                 when (value) {
@@ -239,9 +246,22 @@ class CameraActivity : AppCompatActivity() {
             }
         }
         mSwitchImageView.setOnClickListener {
-            mCameraManager.flashMode = CameraFlashMode.OFF
-            mFlashImageView.setImageDrawable(applicationContext.resources.getDrawable(R.mipmap.flash_off))
-            mCameraManager.switchFacing()
+            mScreenshotRelativeLayout.visibility = View.VISIBLE
+            if (mPreviewView.bitmap == null) {
+                System.out.println("bitmap is null")
+            }
+            mScreenshotImageView.setImageBitmap(mPreviewView.bitmap)
+            CoroutineScope(Dispatchers.IO).launch {
+                mCameraManager.flashMode = CameraFlashMode.OFF
+                mFlashImageView.setImageDrawable(applicationContext.resources.getDrawable(R.mipmap.flash_off))
+                mCameraManager.switchFacing()
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(800)
+                    runOnUiThread {
+                        mScreenshotRelativeLayout.visibility = View.INVISIBLE
+                    }
+                }
+            }
         }
         mCaptureButton.setOnClickListener {
             mCameraManager.capturePicture()
