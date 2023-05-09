@@ -46,7 +46,7 @@ class CameraActivity : AppCompatActivity() {
         var cameraActivity: CameraActivity? = null
     }
 
-    private inner class RecordTimer: CountDownTimer(20000, 1000) {
+    private inner class RecordTimer: CountDownTimer(20400, 1000) {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onTick(p0: Long) {
