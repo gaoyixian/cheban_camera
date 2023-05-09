@@ -50,17 +50,16 @@ class CameraActivity : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onTick(p0: Long) {
-            val value = 20 - countdownTimer
             runOnUiThread {
-                if (value >= 0) {
-                    if (value < 10) {
-                        mTimeTextView.text = "00:0${value}"
+                if (countdownTimer <= 20) {
+                    if (countdownTimer < 10) {
+                        mTimeTextView.text = "00:0${countdownTimer}"
                     } else {
-                        mTimeTextView.text = "00:${value}"
+                        mTimeTextView.text = "00:${countdownTimer}"
                     }
-                    mProgressCircular.setProgress((value / 20f * 100).toInt(), true)
+                    mProgressCircular.setProgress((countdownTimer / 20f * 100).toInt(), true)
                 }
-                countdownTimer--
+                countdownTimer++
             }
         }
 
@@ -69,7 +68,7 @@ class CameraActivity : AppCompatActivity() {
             mTimeTextView.text = "00:20"
             mProgressCircular.setProgress((100).toInt(), true)
             mCameraManager.closeVideoRecord()
-            countdownTimer = 20
+            countdownTimer = 0
         }
     }
 
@@ -90,7 +89,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var mScreenshotRelativeLayout: RelativeLayout
     private lateinit var mScreenshotImageView: ImageView
 
-    private var countdownTimer: Int = 20
+    private var countdownTimer: Int = 0
 
     /// 相机预览视图
     private lateinit var mPreviewView: PreviewView
@@ -275,6 +274,7 @@ class CameraActivity : AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     /// 手势抬起时 就调用一起关闭录制，能关闭的话
                     mCameraManager.closeVideoRecord()
+                    recordTimer.cancel()
                 }
             }
             false
@@ -355,7 +355,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun recodingVideoEnd() {
         recordTimer.cancel()
-        countdownTimer = 20
+        countdownTimer = 0
         runOnUiThread {
             val layoutParams = mCaptureView.layoutParams
             layoutParams.width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, resources.displayMetrics).toInt()
