@@ -370,7 +370,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         cameraProviderFuture.addListener({
             val resources = context.resources
             val displayMetrics = resources.displayMetrics
-            val viewSize = Size(displayMetrics.widthPixels, displayMetrics.heightPixels)
+            val viewSize = Size(720, 1280)
 
             // Used to bind the lifecycle of cameras to the lifecycle owner
             cameraProvider = cameraProviderFuture.get()
