@@ -273,7 +273,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         val bmp = mMMR.frameAtTime ?: return
         val byteArrayOutputStream = ByteArrayOutputStream()
         /// 压缩下
-        bmp.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+        bmp.compress(Bitmap.CompressFormat.JPEG, 10, byteArrayOutputStream)
         val cupBytes: ByteArray = byteArrayOutputStream.toByteArray()
         val destFile = File(context.filesDir, "cover_${System.currentTimeMillis()}.jpg")
         /// 写入到本地
