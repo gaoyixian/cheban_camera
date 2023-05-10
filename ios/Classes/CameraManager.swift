@@ -653,19 +653,27 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         capturePictureDataWithCompletion(completion)
     }
     
+    var captureLock = false
+    
     /**
      Captures still image from currently running capture session.
      
      :param: imageCompletion Completion block containing the captured imageData
      */
     open func capturePictureDataWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void) {
+        if (captureLock) {
+            return
+        }
+        captureLock = true
         guard cameraIsSetup else {
             _show(NSLocalizedString("No capture session setup", comment: ""), message: NSLocalizedString("I can't take any picture", comment: ""))
+            captureLock = false
             return
         }
         
         guard cameraOutputMode == .stillImage else {
             _show(NSLocalizedString("Capture session output mode video", comment: ""), message: NSLocalizedString("I can't take any picture", comment: ""))
+            captureLock = false
             return
         }
         
@@ -688,18 +696,23 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
                     if let error = error {
                         self?._show(NSLocalizedString("Error", comment: ""), message: error.localizedDescription)
                         imageCompletion(.failure(error))
+                        self?.captureLock = false
                         return
                     }
-                    guard let sample = sample else { imageCompletion(.failure(CaptureError.noSampleBuffer)); return }
+                    guard let sample = sample else { imageCompletion(.failure(CaptureError.noSampleBuffer));
+                        self?.captureLock = false
+                        return
+                    }
                     if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(sample) {
                         imageCompletion(CaptureResult(imageData))
                     } else {
                         imageCompletion(.failure(CaptureError.noImageData))
                     }
-                    
+                    self?.captureLock = false
                 })
             } else {
                 imageCompletion(.failure(CaptureError.noVideoConnection))
+                self.captureLock = false
             }
         }
     }
