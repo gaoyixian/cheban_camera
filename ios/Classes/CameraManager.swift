@@ -661,10 +661,6 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
      :param: imageCompletion Completion block containing the captured imageData
      */
     open func capturePictureDataWithCompletion(_ imageCompletion: @escaping (CaptureResult) -> Void) {
-        if (captureLock) {
-            return
-        }
-        captureLock = true
         guard cameraIsSetup else {
             _show(NSLocalizedString("No capture session setup", comment: ""), message: NSLocalizedString("I can't take any picture", comment: ""))
             captureLock = false
@@ -696,11 +692,9 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
                     if let error = error {
                         self?._show(NSLocalizedString("Error", comment: ""), message: error.localizedDescription)
                         imageCompletion(.failure(error))
-                        self?.captureLock = false
                         return
                     }
                     guard let sample = sample else { imageCompletion(.failure(CaptureError.noSampleBuffer));
-                        self?.captureLock = false
                         return
                     }
                     if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(sample) {
@@ -708,11 +702,9 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
                     } else {
                         imageCompletion(.failure(CaptureError.noImageData))
                     }
-                    self?.captureLock = false
                 })
             } else {
                 imageCompletion(.failure(CaptureError.noVideoConnection))
-                self.captureLock = false
             }
         }
     }

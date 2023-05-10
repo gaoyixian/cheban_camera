@@ -278,6 +278,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         if (cameraManager.captureLock) {
             return
         }
+        cameraManager.captureLock = true
         var snapshotView: UIView? = nil
         if let v = self.previewLayer.snapshotView(afterScreenUpdates: true) {
             snapshotView = v
@@ -289,6 +290,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         /// 需要跳过一下动画时间，不然获取照片会黑掉
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: {
             self.cameraManager.capturePictureDataWithCompletion { [weak self] result in
+                self?.cameraManager.captureLock = false
                 guard let self = self else { return }
                 switch result {
                 case .failure:
