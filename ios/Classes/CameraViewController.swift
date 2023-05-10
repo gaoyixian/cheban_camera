@@ -275,10 +275,13 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     }
     
     func capturePicture() {
+        if (cameraManager.captureLock) {
+            return
+        }
         var snapshotView: UIView? = nil
         if let v = self.previewLayer.snapshotView(afterScreenUpdates: true) {
             snapshotView = v
-            self.view.insertSubview(v, belowSubview: self.takeshotButton)
+            self.view.insertSubview(v, belowSubview: self.flashButton)
         }
         if (self.cameraManager.cameraOutputMode != CameraOutputMode.stillImage) {
             self.cameraManager.cameraOutputMode = CameraOutputMode.stillImage;
