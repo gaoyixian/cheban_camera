@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
 import kotlinx.coroutines.delay
 import java.io.*
+import java.util.Arrays
 import java.util.concurrent.TimeUnit
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -413,7 +414,8 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                         mCamera = cameraProvider?.bindToLifecycle(context, cameraSelector, mImageCapture!!, preview)
                     }
                     CameraCaptureMode.MOVIE -> {
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.FHD, FallbackStrategy.lowerQualityThan(
+                            Quality.FHD))).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         /// 构建视频文件路径
                         val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
@@ -442,7 +444,8 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                                 mImageCapture?.flashMode = FLASH_MODE_ON
                             }
                         }
-                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+                        val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.FHD, FallbackStrategy.lowerQualityThan(
+                            Quality.FHD))).build()
                         mVideoCapture = VideoCapture.withOutput(recorder)
                         /// 构建视频文件路径
                         val videoFile = File(context.filesDir, "video_${System.currentTimeMillis()}.mp4")
