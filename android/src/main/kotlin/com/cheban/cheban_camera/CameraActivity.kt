@@ -46,18 +46,18 @@ class CameraActivity : AppCompatActivity() {
         var cameraActivity: CameraActivity? = null
     }
 
-    private inner class RecordTimer: CountDownTimer(20400, 1000) {
+    private inner class RecordTimer: CountDownTimer(30400, 1000) {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onTick(p0: Long) {
             runOnUiThread {
-                if (countdownTimer <= 20) {
+                if (countdownTimer <= 30) {
                     if (countdownTimer < 10) {
                         mTimeTextView.text = "00:0${countdownTimer}"
                     } else {
                         mTimeTextView.text = "00:${countdownTimer}"
                     }
-                    mProgressCircular.setProgress((countdownTimer / 20f * 100).toInt(), true)
+                    mProgressCircular.setProgress((countdownTimer / 30f * 100).toInt(), true)
                 }
                 countdownTimer++
             }
@@ -65,7 +65,7 @@ class CameraActivity : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onFinish() {
-            mTimeTextView.text = "00:20"
+            mTimeTextView.text = "00:30"
             mProgressCircular.setProgress((100).toInt(), true)
             mCameraManager.closeVideoRecord()
             countdownTimer = 0

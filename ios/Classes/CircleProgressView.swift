@@ -51,7 +51,7 @@ class CircleProgressView: UIView, CAAnimationDelegate {
         let progressAnimation: CABasicAnimation = CABasicAnimation(keyPath: "strokeEnd")
         progressAnimation.fromValue = 0
         progressAnimation.toValue = 1
-        progressAnimation.duration = 20
+        progressAnimation.duration = 30
         progressAnimation.isRemovedOnCompletion = false
         progressAnimation.timingFunction = CAMediaTimingFunction(name: .linear)
         progressAnimation.fillMode = .forwards
