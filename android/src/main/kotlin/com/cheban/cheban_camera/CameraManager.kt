@@ -60,7 +60,6 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
 
     val orientationEventListener by lazy {
         object : OrientationEventListener(context) {
-            @SuppressLint("RestrictedApi")
             override fun onOrientationChanged(orientation: Int) {
                 if (orientation == ORIENTATION_UNKNOWN) {
                     return
@@ -73,8 +72,12 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     else -> Surface.ROTATION_0
                 }
 
-                mImageCapture?.targetRotation = rotation
-                mVideoCapture?.targetRotation = rotation
+                mImageCapture?.let {
+                    it.targetRotation = rotation
+                }
+                mVideoCapture?.let {
+                    it.targetRotation = rotation
+                }
             }
         }
     }
@@ -245,6 +248,8 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             val f: File? =  getFileFromMediaUri(uri)
             if (f != null) {
                 val bb = rotateBitmapByDegree(bitmap, getBitmapDegree(f.absolutePath))
+                baos.reset() //重置baos即清空baos
+                bb?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                 uri.toFile().writeBytes(baos.toByteArray())
                 println("========compress -------- ${uri.toFile().length()}")
                 if (bb != null) {
@@ -252,14 +257,9 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 }
             }
         }
-        var byteCount = bitmap?.byteCount
-        if (byteCount == null) {
-            byteCount = 0
-        }
-        val buffer = ByteBuffer.allocate(byteCount)
-        bitmap?.copyPixelsToBuffer(buffer)
-        uri.toFile().delete()
-        uri.toFile().writeBytes(buffer.array())
+        baos.reset() //重置baos即清空baos
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        uri.toFile().writeBytes(baos.toByteArray())
         println("+++++++++compress -------- ${uri.toFile().length()}")
         return bitmap//压缩好比例大小后再进行质量压缩
     }
@@ -289,13 +289,21 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             // 从指定路径下读取图片，并获取其EXIF信息
             val exifInterface = ExifInterface(path)
 
-            // 获取图片的旋转信息
+            // 获取图片的旋转信息 垃圾方法
             val orientation: Int = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
                 ExifInterface.ORIENTATION_NORMAL)
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
-                ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
-                ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
+            if (facing == CameraFacing.FRONT) {
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
+                    ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
+                    ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
+                }
+            } else {
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
+                    ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
+                    ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
+                }
             }
         } catch (e: IOException) {
             e.printStackTrace()
@@ -307,6 +315,9 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
         var returnBm: Bitmap? = null
         // 根据旋转角度，生成旋转矩阵
         val matrix = Matrix()
+        if (facing == CameraFacing.FRONT) {
+            matrix.postScale(-1f, 1f)
+        }
         matrix.postRotate(degree.toFloat())
         try {
             // 将原始图片按照旋转矩阵进行旋转，并得到新的图片

@@ -121,6 +121,9 @@ class CameraActivity : AppCompatActivity() {
         mFocusImageView = findViewById(R.id.focus)
         mScreenshotRelativeLayout = findViewById(R.id.rl_screenshot)
         mScreenshotImageView = findViewById(R.id.iv_screenshot)
+        mPreviewView.scaleType = PreviewView.ScaleType.FIT_CENTER
+        mPreviewView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+
         mFlashSelectionBar.setListener(object : OnFlashSelectionListener {
             override fun callback(value: Int) {
                 when (value) {
