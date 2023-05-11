@@ -1,9 +1,12 @@
 package com.cheban.cheban_camera
 
 import android.annotation.SuppressLint
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.hardware.display.DisplayManager
+import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -28,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
 import kotlinx.coroutines.delay
 import java.io.*
+import java.nio.ByteBuffer
 import java.util.Arrays
 import java.util.concurrent.TimeUnit
 
@@ -171,14 +175,22 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Log.d("capture picture", msg)
                     if (output.savedUri != null) {
-                        val originPath = output.savedUri!!.path
+                        val saveUri = output.savedUri!!
+                        println(">>>>>>>>>>>> compress ${saveUri.toFile().length()}")
+                        val bmp: Bitmap? = compressImg(saveUri)
+                       val originPath = saveUri.path
                         val thumbnailPath = ""
-                        val options = BitmapFactory.Options()
-                        options.inJustDecodeBounds = true
-                        val bitmap = BitmapFactory.decodeFile(originPath, options)
+                        var width = bmp?.width
+                        if (width == null) {
+                            width = 0
+                        }
+                        var height = bmp?.height
+                        if (height == null) {
+                            height = 0
+                        }
                         val dict: MutableMap<String, Any> = mutableMapOf(
-                            "width" to options.outWidth,
-                            "height" to options.outHeight,
+                            "width" to width,
+                            "height" to height,
                             "type" to 1,
                             "duration" to 0,
                         )
@@ -192,6 +204,122 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
                 }
             }
         )
+    }
+
+    /// 新增压缩图片
+    private fun compressImg(uri: Uri): Bitmap? {
+        //将图片转换为bitmap
+        val bitmapImg = BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
+
+        val baos = ByteArrayOutputStream()
+        bitmapImg.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        println("bitmap factory bytes size ---------------${baos.toByteArray().size}" )
+        if (baos.toByteArray().size / 1024 > 512) { //判断如果图片大于500k,进行压缩避免在生成图片（BitmapFactory.decodeStream）时溢出
+            baos.reset() //重置baos即清空baos
+            bitmapImg.compress(Bitmap.CompressFormat.JPEG, 50, baos) //这里压缩50%，把压缩后的数据存放到baos中
+        }
+        var isBm: ByteArrayInputStream? = ByteArrayInputStream(baos.toByteArray())
+        val newOpts = BitmapFactory.Options()
+        //开始读入图片，此时把options.inJustDecodeBounds 设回true了
+        newOpts.inJustDecodeBounds = true
+        var bitmap = BitmapFactory.decodeStream(isBm, null, newOpts)
+        newOpts.inJustDecodeBounds = false
+        val w = newOpts.outWidth
+        val h = newOpts.outHeight
+
+        val hh = 1920 //这里设置高度为800f
+        val ww = 1080 //这里设置宽度为480f
+        //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
+        var be = 1 //be=1表示不缩放
+        if (w > h && w > ww) { //如果宽度大的话根据宽度固定大小缩放
+            be = (newOpts.outWidth / ww).toInt()
+        } else if (w < h && h > hh) { //如果高度高的话根据宽度固定大小缩放
+            be = (newOpts.outHeight / hh).toInt()
+        }
+        if (be <= 0) be = 1
+        newOpts.inSampleSize = be //设置缩放比例
+        //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+        isBm = ByteArrayInputStream(baos.toByteArray())
+        bitmap = BitmapFactory.decodeStream(isBm, null, newOpts)
+        if (bitmap != null) {
+            val f: File? =  getFileFromMediaUri(uri)
+            if (f != null) {
+                val bb = rotateBitmapByDegree(bitmap, getBitmapDegree(f.absolutePath))
+                uri.toFile().writeBytes(baos.toByteArray())
+                println("========compress -------- ${uri.toFile().length()}")
+                if (bb != null) {
+                    return bb
+                }
+            }
+        }
+        var byteCount = bitmap?.byteCount
+        if (byteCount == null) {
+            byteCount = 0
+        }
+        val buffer = ByteBuffer.allocate(byteCount)
+        bitmap?.copyPixelsToBuffer(buffer)
+        uri.toFile().delete()
+        uri.toFile().writeBytes(buffer.array())
+        println("+++++++++compress -------- ${uri.toFile().length()}")
+        return bitmap//压缩好比例大小后再进行质量压缩
+    }
+
+    private fun getFileFromMediaUri(uri: Uri): File? {
+        if (uri.scheme.toString().compareTo("content") == 0) {
+            //val cr: ContentResolver = this.getContentResolver()
+            val cursor: Cursor = context.contentResolver.query(uri, null, null, null, null) ?: return null
+            // 根据Uri从数据库中找
+            cursor.moveToFirst()
+            cursor.getColumnIndex("_data")
+            val  cursorRange = cursor.getColumnIndex("_data");
+            if (cursorRange >= 0) {
+                val filePath: String = cursor.getString(cursorRange) // 获取图片路径
+                cursor.close()
+                return File(filePath)
+            }
+        } else if (uri.scheme.toString().compareTo("file") == 0) {
+            return File(uri.toString().replace("file://", ""))
+        }
+        return null
+    }
+
+    private fun getBitmapDegree(path: String): Int {
+        var degree = 0
+        try {
+            // 从指定路径下读取图片，并获取其EXIF信息
+            val exifInterface = ExifInterface(path)
+
+            // 获取图片的旋转信息
+            val orientation: Int = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL)
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return degree
+    }
+
+    private fun rotateBitmapByDegree(bm: Bitmap, degree: Int): Bitmap? {
+        var returnBm: Bitmap? = null
+        // 根据旋转角度，生成旋转矩阵
+        val matrix = Matrix()
+        matrix.postRotate(degree.toFloat())
+        try {
+            // 将原始图片按照旋转矩阵进行旋转，并得到新的图片
+            returnBm = Bitmap.createBitmap(bm, 0, 0, bm.width, bm.height, matrix, true)
+        } catch (e: OutOfMemoryError) {
+        }
+        if (returnBm == null) {
+            returnBm = bm
+        }
+        if (bm != returnBm) {
+            bm.recycle()
+        }
+        return returnBm
     }
 
     /// 开始录制视频

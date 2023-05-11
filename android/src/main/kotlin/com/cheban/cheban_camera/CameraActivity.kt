@@ -247,7 +247,7 @@ class CameraActivity : AppCompatActivity() {
         mSwitchImageView.setOnClickListener {
             mScreenshotRelativeLayout.visibility = View.VISIBLE
             if (mPreviewView.bitmap == null) {
-                System.out.println("bitmap is null")
+                println("bitmap is null")
             }
             mScreenshotImageView.setImageBitmap(mPreviewView.bitmap)
             CoroutineScope(Dispatchers.IO).launch {
@@ -277,11 +277,11 @@ class CameraActivity : AppCompatActivity() {
                     recordTimer.cancel()
                 }
             }
-            false
-        }
+        false
+    }
 
-        /// UI后续的业务判断的
-        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED) {
+    /// UI后续的业务判断的
+    if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED) {
             mRecordImageView.visibility = View.VISIBLE
         }
 
