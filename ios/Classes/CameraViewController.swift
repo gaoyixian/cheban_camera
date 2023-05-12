@@ -100,18 +100,27 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
     lazy var takeshotButton: TakeshotButton = {
         $0.takeshotShouldCapture = { [weak self] in
             guard let self = self else { return }
+            if self.cameraManager.cameraIsSetup == false {
+                return
+            }
             if (self.sourceType == 1 || self.sourceType == 3) {
                 self.capturePicture()
             }
         }
         $0.takeshotShouldRecordMovie = { [weak self] isStart in
             guard let self = self else { return }
+            if self.cameraManager.cameraIsSetup == false {
+                return
+            }
             if (self.sourceType == 2 || self.sourceType == 3) {
                 self.recordMovie(isStart)
             }
         }
         $0.takeshotUpdateRecordMovie = { [weak self] countdown in
             guard let self = self else { return }
+            if self.cameraManager.cameraIsSetup == false {
+                return
+            }
             if (self.sourceType == 2 || self.sourceType == 3) {
                 if (countdown < 10) {
                     self.tipLabel.text = "00:00:0" + String(countdown)
