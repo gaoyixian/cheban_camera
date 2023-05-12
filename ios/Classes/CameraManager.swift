@@ -353,7 +353,7 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
     fileprivate var previewLayer: AVCaptureVideoPreviewLayer?
     fileprivate var library: PHPhotoLibrary?
     
-    fileprivate var cameraIsSetup = false
+    public var cameraIsSetup = false
     fileprivate var cameraIsObservingDeviceOrientation = false
     
     fileprivate var zoomScale = CGFloat(1.0)
