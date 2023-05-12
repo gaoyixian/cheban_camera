@@ -460,6 +460,9 @@ open class CameraManager: NSObject, AVCaptureFileOutputRecordingDelegate, UIGest
         if let validCaptureSession = captureSession {
             if !validCaptureSession.isRunning, cameraIsSetup {
                 sessionQueue.async {
+                    // 崩溃测试
+                    let array = ["1"]
+                    array[1]
                     validCaptureSession.startRunning()
                     self._startFollowingDeviceOrientation()
                 }
