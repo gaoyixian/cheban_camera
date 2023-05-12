@@ -318,7 +318,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                         do {
                             // 1024 * 1024 = 1kb * 500 = 500k max = 500kb
-                            let compressData = self.compressImage(image: drawImg, maxLength: 1024 * 1024 * 500)
+                            let compressData = self.compressImage(image: drawImg, maxLength: 1024 * 500)
                             let compressImg = UIImage(data: compressData)
                             // 压缩失败用原来的
                             try (compressImg ?? drawImg).pngData()?.write(to: URL(fileURLWithPath: path))
@@ -340,7 +340,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                         do {
                             // 1024 * 1024 = 1kb * 500 = 500k max = 500kb
-                            let compressData = self.compressImage(image: image, maxLength: 1024 * 1024 * 500)
+                            let compressData = self.compressImage(image: image, maxLength: 1024 * 500)
                             let compressImg = UIImage(data: compressData)
                             // 压缩失败用原来的
                             try (compressImg ?? image).pngData()?.write(to: URL(fileURLWithPath: path))
