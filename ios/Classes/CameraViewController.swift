@@ -321,7 +321,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             let compressData = self.compressImage(image: drawImg, maxLength: 1024 * 500)
                             let compressImg = UIImage(data: compressData)
                             // 压缩失败用原来的
-                            try (compressImg ?? drawImg).pngData()?.write(to: URL(fileURLWithPath: path))
+                            try compressData.write(to: URL(fileURLWithPath: path))
                             self.flutterResult!([
                                 "width": Int(compressImg?.size.width ?? drawImg.size.width),
                                 "height": Int(compressImg?.size.height ?? drawImg.size.height),
@@ -343,7 +343,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             let compressData = self.compressImage(image: image, maxLength: 1024 * 500)
                             let compressImg = UIImage(data: compressData)
                             // 压缩失败用原来的
-                            try (compressImg ?? image).pngData()?.write(to: URL(fileURLWithPath: path))
+                            try compressData.write(to: URL(fileURLWithPath: path))
                             self.flutterResult!([
                                 "width": Int(compressImg?.size.width ?? image.size.width),
                                 "height": Int(compressImg?.size.height ?? image.size.height),
@@ -377,7 +377,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         let tempMaxLength: Int = maxLength
         var compression: CGFloat = 1
         guard var data = image.jpegData(compressionQuality: compression), data.count > tempMaxLength else { return image.jpegData(compressionQuality: compression)! }
-
+        
         // 压缩大小
         var max: CGFloat = 1
         var min: CGFloat = 0
@@ -426,6 +426,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                     self.cameraManager.showErrorBlock("Error occurred", "Cannot save video.")
                 } else {
                     let image = self.thumbnailImageForVideo(videoURL: videoURL!)
+                    let compressData = self.compressImage(image: image!, maxLength: 1024 * 500)
                     if (image != nil) {
                         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
                         let duration = self.totalSecondForVideo(videoURL: videoURL!)
@@ -433,7 +434,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
                             return
                         }
                         do {
-                            try image!.pngData()?.write(to: URL(fileURLWithPath: path))
+                            try compressData.write(to: URL(fileURLWithPath: path))
                             self.flutterResult!([
                                 "width": Int(image!.size.width),
                                 "height": Int(image!.size.height),
@@ -468,10 +469,7 @@ class CameraViewController: UIViewController, CameraManagerDelegate {
         assetImg.apertureMode = AVAssetImageGenerator.ApertureMode.encodedPixels
         do{
             let cgimgref = try assetImg.copyCGImage(at: CMTime(seconds: 0, preferredTimescale: 50), actualTime: nil)
-            let cover = UIImage(cgImage: cgimgref)
-            /// 视频封面压缩了
-            let compressData = compressImage(image: cover, maxLength: 1024 * 1024 * 500)
-            return UIImage(data: compressData)
+            return UIImage(cgImage: cgimgref)
         }catch{
             return nil
         }
