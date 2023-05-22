@@ -186,7 +186,7 @@
         NSDictionary *compressionProperties = @{ AVVideoAverageBitRateKey : @(bitsPerSecond),
                                                  AVVideoExpectedSourceFrameRateKey : @(15),
                                                  AVVideoMaxKeyFrameIntervalKey : @(15),
-                                                 AVVideoProfileLevelKey : AVVideoProfileLevelH264High40 };
+                                                 AVVideoProfileLevelKey : AVVideoProfileLevelH264HighAutoLevel };
         CGFloat width = self.videoSize.width * [UIScreen mainScreen].scale;
         CGFloat height = self.videoSize.height * [UIScreen mainScreen].scale;
         //视频属性
