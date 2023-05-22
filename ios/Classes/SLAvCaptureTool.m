@@ -175,6 +175,7 @@
     }
     return _previewLayer;
 }
+/// <#Description#>
 - (AVAssetWriterInput *)assetWriterVideoInput {
     if (!_assetWriterVideoInput) {
         //写入视频大小
@@ -183,10 +184,10 @@
         CGFloat bitsPerPixel = 12.0;
         NSInteger bitsPerSecond = numPixels * bitsPerPixel;
         // 码率和帧率设置
-        NSDictionary *compressionProperties = @{ AVVideoAverageBitRateKey : @(bitsPerSecond),
-                                                 AVVideoExpectedSourceFrameRateKey : @(15),
-                                                 AVVideoMaxKeyFrameIntervalKey : @(15),
-                                                 AVVideoProfileLevelKey : AVVideoProfileLevelH264HighAutoLevel };
+//        NSDictionary *compressionProperties = @{ AVVideoAverageBitRateKey : @(bitsPerSecond),
+//                                                 AVVideoExpectedSourceFrameRateKey : @(15),
+//                                                 AVVideoMaxKeyFrameIntervalKey : @(15),
+//                                                 AVVideoProfileLevelKey : AVVideoProfileLevelH264HighAutoLevel };
         CGFloat width = self.videoSize.width * [UIScreen mainScreen].scale;
         CGFloat height = self.videoSize.height * [UIScreen mainScreen].scale;
         //视频属性
@@ -194,7 +195,8 @@
                                            AVVideoWidthKey : @(width ),
                                            AVVideoHeightKey : @(height),
                                            AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill,
-                                           AVVideoCompressionPropertiesKey : compressionProperties };
+//                                           AVVideoCompressionPropertiesKey : compressionProperties
+        };
         
         _assetWriterVideoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:self.videoCompressionSettings];
         //expectsMediaDataInRealTime 必须设为yes，需要从capture session 实时获取数据
