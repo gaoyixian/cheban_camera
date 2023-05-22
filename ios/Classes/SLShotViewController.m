@@ -465,7 +465,7 @@
             @"thumbnail_file_path": @"",
         };
         self.flutterResult(result);
-        [self dismissViewControllerAnimated:YES completion:nil];
+        [self dismissViewControllerAnimated:NO completion:nil];
     }
 
     // TODO: 编辑暂时不考虑用原生做，否则Android一套iOS一套
@@ -504,7 +504,7 @@
                 @"duration": [NSNumber numberWithInteger:duration]
             };
             self.flutterResult(result);
-            [self dismissViewControllerAnimated:YES completion:nil];
+            [self dismissViewControllerAnimated:NO completion:nil];
         }
 
     }
