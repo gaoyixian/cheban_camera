@@ -2,7 +2,6 @@ import Flutter
 import UIKit
 import AVFoundation
 
-//UIImagePickerControllerDelegate, UINavigationControllerDelegate
 public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
         
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -18,10 +17,10 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
           let faceType = dict["face_type"] as! Int
           let animated = dict["animated"] as? Int
           
-          let cameraVC = CameraViewController.init()
-          cameraVC.flutterResult = result
-          cameraVC.sourceType = sourceType
-          cameraVC.faceType = faceType
+          let cameraVC = SLShotViewController()
+//          cameraVC.flutterResult = result
+//          cameraVC.sourceType = sourceType
+//          cameraVC.faceType = faceType
           cameraVC.modalPresentationStyle = .overFullScreen
           if let anim = animated, anim == 1 {
               UIApplication.shared.keyWindow!.rootViewController!.present(cameraVC, animated: true)
