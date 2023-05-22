@@ -26,6 +26,7 @@
     NSTimeInterval _durationOfVideo;  //录制视频的时长
 }
 
+
 @property (nonatomic, strong) SLAvCaptureTool *avCaptureTool; //摄像头采集工具
 @property (nonatomic, strong) UIImageView *captureView; // 捕获预览视图
 
@@ -389,6 +390,24 @@
 - (void)captureTool:(SLAvCaptureTool *)captureTool didOutputPhoto:(UIImage *)image error:(NSError *)error {
     [self.avCaptureTool stopRunning];
     NSLog(@"拍照结束");
+    if (self.flutterResult == nil) {
+        return;
+    }
+    NSString *prefixPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+    NSString *path = [NSString stringWithFormat:@"%@/image_%@.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
+    NSData *data = [self compressImage:image maxLen:1024 * 500];
+    if ([data writeToURL:[NSURL fileURLWithPath:path] atomically:YES]) {
+        NSDictionary *result = @{
+            @"width": [NSNumber numberWithInt:image.size.width],
+            @"height": [NSNumber numberWithInt:image.size.height],
+            @"type": @1,
+            @"origin_file_path": @"",
+            @"thumbnail_file_path": @"",
+        };
+        self.flutterResult(result);
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+
     // TODO: 编辑暂时不考虑用原生做，否则Android一套iOS一套
 //    SLEditImageController * editViewController = [[SLEditImageController alloc] init];
 //    editViewController.image = image;
@@ -414,5 +433,41 @@
     NSLog(@"视频文件大小 === %.2fM",fileSize/(1024.0*1024.0));
 }
 
+- (NSData *)compressImage:(UIImage *)image maxLen:(NSInteger)maxLength {
+    NSInteger tempMaxLength = maxLength;
+    CGFloat compression = 1;
+    NSData *data = UIImageJPEGRepresentation(image, compression);
+    if (data.length < tempMaxLength) {
+        return data;
+    }
+    CGFloat max = 1;
+    CGFloat min = 0;
+    for (int i = 0; i < 6; i++) {
+        compression = (max + min) / 2;
+        data = UIImageJPEGRepresentation(image, compression);
+        if (data.length < tempMaxLength * 0.9) {
+            min = compression;
+        } else if (data.length > tempMaxLength) {
+            max = compression;
+        } else {
+            break;
+        }
+    }
+    UIImage *resultImage = [UIImage imageWithData:data];
+    if (data.length < tempMaxLength) {
+        return data;
+    }
+    NSInteger lastDataLength = 0;
+    while (data.length > tempMaxLength && data.length != lastDataLength) {
+        lastDataLength = data.length;
+        CGFloat ratio = tempMaxLength / data.length;
+        CGSize size = CGSizeMake(resultImage.size.width * ratio, resultImage.size.height * ratio);
+        UIGraphicsBeginImageContext(size);
+        resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        data = UIImageJPEGRepresentation(image, 0.1);
+    }
+    return data;
+}
 
 @end

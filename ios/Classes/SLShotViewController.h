@@ -7,11 +7,17 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Flutter/Flutter.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// 拍摄视图控制器
 @interface SLShotViewController : UIViewController
+
+@property (assign, nonatomic) NSInteger faceType;
+@property (assign, nonatomic) NSInteger sourceType;
+
+@property (copy, nonatomic) FlutterResult flutterResult;
 
 @end
 
