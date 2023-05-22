@@ -171,7 +171,7 @@
 - (AVCaptureVideoPreviewLayer *)previewLayer {
     if (_previewLayer == nil) {
         _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
-        _previewLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+        _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     }
     return _previewLayer;
 }
@@ -360,7 +360,7 @@
     }
     //输出样式设置 AVVideoCodecKey:AVVideoCodecJPEG等
     AVCapturePhotoSettings *capturePhotoSettings = [AVCapturePhotoSettings photoSettings];
-    //    capturePhotoSettings.highResolutionPhotoEnabled = YES; //高分辨率
+//        capturePhotoSettings.highResolutionPhotoEnabled = YES; //高分辨率
     capturePhotoSettings.flashMode = _flashMode;  //闪光灯 根据环境亮度自动决定是否打开闪光灯
     [self.capturePhotoOutput capturePhotoWithSettings:capturePhotoSettings delegate:self];
 }
@@ -380,29 +380,32 @@
     if (self.devicePosition == AVCaptureDevicePositionFront && captureConnection.supportsVideoMirroring) {
         captureConnection.videoMirrored = YES;
     }
-    //这个API 每次开始录制时设置视频输出方向，会造成摄像头的短暂黑暗，有问题的代码可以看此类文件夹下的SLAvCaptureTool-bug副本；切换摄像头时设置此属性没有较大的影响
-    // captureConnection.videoOrientation = AVCaptureVideoOrientationPortrait;
-    //由于上述原因，故采用在写入输出视频时调整方向
-    if (self.shootingOrientation == UIDeviceOrientationLandscapeRight) {
-        self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(M_PI/2);
-    } else if (self.shootingOrientation == UIDeviceOrientationLandscapeLeft) {
-        self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(-M_PI/2);
-    } else if (self.shootingOrientation == UIDeviceOrientationPortraitUpsideDown) {
-        self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(M_PI);
-    } else {
-        self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(0);
-    }
-    if ([self.assetWriter canAddInput:self.assetWriterVideoInput]) {
-        [self.assetWriter addInput:self.assetWriterVideoInput];
-    } else {
-        NSLog(@"视频写入失败");
-    }
-    if ([self.assetWriter canAddInput:self.assetWriterAudioInput] && self.avCaptureType == SLAvCaptureTypeAv) {
-        [self.assetWriter addInput:self.assetWriterAudioInput];
-    } else {
-        NSLog(@"音频写入失败");
-    }
-    _isRecording = YES;
+    NSInteger delay = self.devicePosition == AVCaptureDevicePositionFront ? 1.5 : 0;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        //这个API 每次开始录制时设置视频输出方向，会造成摄像头的短暂黑暗，有问题的代码可以看此类文件夹下的SLAvCaptureTool-bug副本；切换摄像头时设置此属性没有较大的影响
+        // captureConnection.videoOrientation = AVCaptureVideoOrientationPortrait;
+        //由于上述原因，故采用在写入输出视频时调整方向
+        if (self.shootingOrientation == UIDeviceOrientationLandscapeRight) {
+            self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(M_PI/2);
+        } else if (self.shootingOrientation == UIDeviceOrientationLandscapeLeft) {
+            self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(-M_PI/2);
+        } else if (self.shootingOrientation == UIDeviceOrientationPortraitUpsideDown) {
+            self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(M_PI);
+        } else {
+            self.assetWriterVideoInput.transform = CGAffineTransformMakeRotation(0);
+        }
+        if ([self.assetWriter canAddInput:self.assetWriterVideoInput]) {
+            [self.assetWriter addInput:self.assetWriterVideoInput];
+        } else {
+            NSLog(@"视频写入失败");
+        }
+        if ([self.assetWriter canAddInput:self.assetWriterAudioInput] && self.avCaptureType == SLAvCaptureTypeAv) {
+            [self.assetWriter addInput:self.assetWriterAudioInput];
+        } else {
+            NSLog(@"音频写入失败");
+        }
+        _isRecording = YES;
+    });
 }
 /// 结束捕获视频帧
 - (void)stopRecordVideo {
@@ -525,6 +528,7 @@
 - (void)captureOutput:(AVCapturePhotoOutput *)output didFinishProcessingPhoto:(AVCapturePhoto *)photo error:(nullable NSError *)error API_AVAILABLE(ios(11.0)) {
     NSData *data = [photo fileDataRepresentation];
     UIImage *image  = [UIImage imageWithData:data];
+    image = [self cropImage:image usingPreviewLayer:_previewLayer];
     if ([self.delegate respondsToSelector:@selector(captureTool:didOutputPhoto:error:)]) {
         [self.delegate captureTool:self didOutputPhoto:image error:error];
     }else {
@@ -616,6 +620,24 @@
 /// 丢帧
 - (void)captureOutput:(AVCaptureOutput *)output didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection API_AVAILABLE(ios(6.0)) {
     
+}
+
+- (UIImage *)cropImage:(UIImage *)image usingPreviewLayer:(AVCaptureVideoPreviewLayer *)previewLayer
+{
+    CGRect previewBounds = previewLayer.bounds;
+    CGRect outputRect = [previewLayer metadataOutputRectOfInterestForRect:previewBounds];
+    
+    CGImageRef takenCGImage = image.CGImage;
+    size_t width = CGImageGetWidth(takenCGImage);
+    size_t height = CGImageGetHeight(takenCGImage);
+    CGRect cropRect = CGRectMake(outputRect.origin.x * width, outputRect.origin.y * height,
+                                 outputRect.size.width * width, outputRect.size.height * height);
+    
+    CGImageRef cropCGImage = CGImageCreateWithImageInRect(takenCGImage, cropRect);
+    image = [UIImage imageWithCGImage:cropCGImage scale:1 orientation:image.imageOrientation];
+    CGImageRelease(cropCGImage);
+    
+    return image;
 }
 
 @end
