@@ -461,7 +461,7 @@
             //添加进度条
             [self.shotBtn.layer addSublayer:self.progressLayer];
             self.progressLayer.strokeEnd = 0;
-            NSString *outputVideoFielPath = [NSTemporaryDirectory() stringByAppendingString:@"cheban_camera_video.mp4"];
+            NSString *outputVideoFielPath = [NSTemporaryDirectory() stringByAppendingString:[NSString stringWithFormat:@"cheban_camera_video_%.0f.mp4", [[NSDate date] timeIntervalSince1970]]];
             //开始录制视频
             [self.avCaptureTool startRecordVideoToOutputFileAtPath:outputVideoFielPath recordType:SLAvCaptureTypeAv];
         }
@@ -523,7 +523,7 @@
         return;
     }
     NSString *prefixPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-    NSString *path = [NSString stringWithFormat:@"%@/image_%f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
+    NSString *path = [NSString stringWithFormat:@"%@/cheban_camera_image_%.0f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
     NSData *data = [self compressImage:image maxLen:1024 * 500];
     if ([data writeToURL:[NSURL fileURLWithPath:path] atomically:YES]) {
         NSDictionary *result = @{
@@ -563,7 +563,7 @@
     UIImage *image = [self thumbnailImageForVideo:outputFileURL];
     if (image != nil) {
         NSString *prefixPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-        NSString *path = [NSString stringWithFormat:@"%@/image_%f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
+        NSString *path = [NSString stringWithFormat:@"%@/cheban_camera_image_%.0f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
         NSInteger duration = [self totalSecondForVideo:outputFileURL];
         NSData *data = [self compressImage:image maxLen:1024 * 500];
         if ([data writeToURL:[NSURL fileURLWithPath:path] atomically:YES]) {
