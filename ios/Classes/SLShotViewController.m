@@ -465,7 +465,10 @@
             @"thumbnail_file_path": @"",
         };
         self.flutterResult(result);
-        [self dismissViewControllerAnimated:NO completion:nil];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [self dismissViewControllerAnimated:NO completion:nil];
+        });
+
     }
 
     // TODO: 编辑暂时不考虑用原生做，否则Android一套iOS一套
@@ -504,7 +507,9 @@
                 @"duration": [NSNumber numberWithInteger:duration]
             };
             self.flutterResult(result);
-            [self dismissViewControllerAnimated:NO completion:nil];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.25 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                [self dismissViewControllerAnimated:NO completion:nil];
+            });
         }
 
     }
