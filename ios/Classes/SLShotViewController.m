@@ -37,7 +37,9 @@
 @property (nonatomic, strong) SLBlurView *shotBtn; //拍摄按钮
 @property (nonatomic, strong) UIView *whiteView; //白色圆心
 @property (nonatomic, strong) CAShapeLayer *progressLayer; //环形进度条
-@property (nonatomic, strong)  UILabel *tipsLabel; //拍摄提示语  轻触拍照 长按拍摄
+@property (nonatomic, strong) CAShapeLayer *traceLayer; //环形进度条
+@property (nonatomic, strong) UILabel *tipsLabel; //拍摄提示语  轻触拍照 长按拍摄
+@property (nonatomic, strong) UILabel *timeLabel; //倒计时文本
 @property (nonatomic, strong) UIButton *flashButton; //闪光灯按钮
 @property (nonatomic, strong) SLAvCaptureFlashBar *flashBar;//闪光灯选择条
 
@@ -93,6 +95,7 @@
     
     [self.view addSubview:self.backBtn];
     [self.view addSubview:self.shotBtn];
+    [self.shotBtn.layer addSublayer:self.traceLayer];
     [self.view addSubview:self.switchCameraBtn];
     [self.view addSubview:self.flashButton];
     
@@ -109,6 +112,11 @@
         _avCaptureTool.preview = self.captureView;
         _avCaptureTool.delegate = self;
         _avCaptureTool.videoSize = CGSizeMake(SL_kScreenWidth*0.8, SL_kScreenHeight*0.8);
+        if (self.faceType == 1) {
+            [_avCaptureTool switchsCamera:AVCaptureDevicePositionBack];
+        } else {
+            [_avCaptureTool switchsCamera:AVCaptureDevicePositionFront];
+        }
     }
     return _avCaptureTool;
 }
@@ -142,6 +150,11 @@
         _shotBtn = [[SLBlurView alloc] init];
         _shotBtn.userInteractionEnabled = YES;
         _shotBtn.frame = CGRectMake(0, 0, 72, 72);
+        if (self.sourceType == 1) {
+            _shotBtn.backgroundColor = [UIColor whiteColor];
+        } else {
+            _shotBtn.backgroundColor = [UIColor clearColor];
+        }
         _shotBtn.center = CGPointMake(self.view.sl_width/2.0, self.view.sl_height - 80);
         _shotBtn.clipsToBounds = YES;
         _shotBtn.layer.cornerRadius = _shotBtn.sl_width/2.0;
@@ -177,6 +190,27 @@
     }
     return _whiteView;
 }
+- (CAShapeLayer *)traceLayer {
+    if (_traceLayer == nil) {
+        //设置画笔路径
+        UIBezierPath *path = [UIBezierPath bezierPathWithArcCenter:CGPointMake(self.shotBtn.frame.size.width/2.0, self.shotBtn.frame.size.height/2.0) radius:self.shotBtn.frame.size.width/2.0 startAngle:- M_PI_2 endAngle:-M_PI_2 + M_PI * 2 clockwise:YES];
+        //按照路径绘制圆环
+        _traceLayer = [CAShapeLayer layer];
+        _traceLayer.frame = _shotBtn.bounds;
+        _traceLayer.fillColor = [UIColor clearColor].CGColor;
+        _traceLayer.lineWidth = 12;
+        //线头的样式
+        _traceLayer.lineCap = kCALineCapButt;
+        //圆环颜色
+        _traceLayer.strokeColor = [[UIColor whiteColor] colorWithAlphaComponent:0.16].CGColor;
+        _traceLayer.strokeStart = 0;
+        _traceLayer.strokeEnd = 1;
+        //path 决定layer将被渲染成何种形状
+        _traceLayer.path = path.CGPath;
+    }
+    return _traceLayer;
+
+}
 - (CAShapeLayer *)progressLayer {
     if (_progressLayer == nil) {
         //设置画笔路径
@@ -209,9 +243,27 @@
         _tipsLabel.textColor = [UIColor whiteColor];
         _tipsLabel.font = [UIFont systemFontOfSize:14];
         _tipsLabel.textAlignment = NSTextAlignmentCenter;
-        _tipsLabel.text = @"轻触拍照，按住摄像";
+        if (self.sourceType == 1) {
+            _tipsLabel.text = @"点击拍照";
+        } else if (self.sourceType == 2) {
+            _tipsLabel.text = @"按住摄像";
+        } else {
+            _tipsLabel.text = @"轻触拍照，按住摄像";
+        }
     }
     return  _tipsLabel;
+}
+- (UILabel *)timeLabel {
+    if (!_timeLabel) {
+        _timeLabel = [[UILabel alloc] initWithFrame:CGRectMake((self.view.sl_width - 140)/2.0, self.shotBtn.sl_y - 20 - 30, 140, 20)];
+        _timeLabel.textColor = [UIColor whiteColor];
+        _timeLabel.font = [UIFont systemFontOfSize:14];
+        _timeLabel.textAlignment = NSTextAlignmentCenter;
+        _timeLabel.text = @"00:00";
+        _timeLabel.hidden = YES;
+        [self.view addSubview:_timeLabel];
+    }
+    return _timeLabel;
 }
 - (UIButton *)flashButton {
     if (!_flashButton) {
@@ -276,6 +328,7 @@
 #pragma mark - HelpMethods
 //开始计时录制
 - (void)startTimer{
+    [self.tipsLabel removeFromSuperview];
     /** 创建定时器对象
      * para1: DISPATCH_SOURCE_TYPE_TIMER 为定时器类型
      * para2-3: 中间两个参数对定时器无用
@@ -302,10 +355,13 @@
     //    __weak typeof(self) weakSelf = self;
     dispatch_source_set_event_handler(_gcdTimer, ^{
         self->_durationOfVideo+= timeInterval;
-        SL_DISPATCH_ON_MAIN_THREAD(^{
+        SL_DISPATCH_ON_MAIN_THREAD((^{
+            self.timeLabel.hidden = NO;
             //主线程更新UI
             self.progressLayer.strokeEnd = self->_durationOfVideo/KMaxDurationOfVideo;
-        });
+            int duration = ceil(self->_durationOfVideo);
+            self.timeLabel.text = [NSString stringWithFormat:@"00:%02d", duration - 1];
+        }));
         
         if(self->_durationOfVideo > KMaxDurationOfVideo) {
             NSLog(@"时长 %f", self->_durationOfVideo);
@@ -320,6 +376,7 @@
                 //停止录制
                 [self.avCaptureTool stopRecordVideo];
                 [self.avCaptureTool stopRunning];
+                self.timeLabel.hidden = YES;
             });
         }
     });
@@ -383,13 +440,22 @@
 }
 //轻触拍照
 - (void)takePicture:(UITapGestureRecognizer *)tap {
+    if (self.sourceType == 2) {
+        return;
+    }
     [self.avCaptureTool outputPhoto];
     NSLog(@"拍照");
 }
 //长按摄像 小视频
 - (void)recordVideo:(UILongPressGestureRecognizer *)longPress {
+    if (self.sourceType == 1) {
+        return;
+    }
     switch (longPress.state) {
         case UIGestureRecognizerStateBegan:{
+            self.whiteView.sl_size = CGSizeMake(24, 24);
+            self.whiteView.center = CGPointMake(self.shotBtn.sl_width/2.0, self.shotBtn.sl_height/2.0);
+            self.whiteView.layer.cornerRadius = self.whiteView.sl_width/2.0;
             //开始计时
             [self startTimer];
             //添加进度条
@@ -406,6 +472,9 @@
             //            NSLog(@"正在摄像");
             break;
         case UIGestureRecognizerStateEnded:{
+            self.whiteView.sl_size = CGSizeMake(60, 60);
+            self.whiteView.center = CGPointMake(self.shotBtn.sl_width/2.0, self.shotBtn.sl_height/2.0);
+            self.whiteView.layer.cornerRadius = self.whiteView.sl_width/2.0;
             //取消计时器
             dispatch_source_cancel(self->_gcdTimer);
             self->_durationOfVideo = 0;

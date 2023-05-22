@@ -20,7 +20,7 @@
     if (self) {
         self.clipsToBounds = YES;
         self.userInteractionEnabled = YES;
-        [self addSubview:self.blurView];
+//        [self addSubview:self.blurView];
     }
     return self;
 }
@@ -30,7 +30,7 @@
     if (self) {
         self.clipsToBounds = YES;
         self.userInteractionEnabled = YES;
-        [self addSubview:self.blurView];
+//        [self addSubview:self.blurView];
     }
     return self;
 }
@@ -47,8 +47,8 @@
 }
 
 - (void)layoutSubviews {
-    [self sendSubviewToBack:self.blurView];
-    self.blurView.frame = self.bounds;
+//    [self sendSubviewToBack:self.blurView];
+//    self.blurView.frame = self.bounds;
 }
 
 
