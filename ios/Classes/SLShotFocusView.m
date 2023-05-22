@@ -49,7 +49,7 @@
     self.borderPath = [UIBezierPath bezierPathWithRect:self.bounds];
     self.borderPath.lineCapStyle = kCGLineCapButt;//线条拐角
     self.borderPath.lineWidth = 2.0;
-    UIColor *color = [UIColor colorWithRed:45/255.0 green:175/255.0 blue:45/255.0 alpha:1];
+    UIColor *color = [UIColor yellowColor];
     [color set];// 设置边框线条颜色
     
     //起点

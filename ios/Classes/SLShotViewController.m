@@ -13,12 +13,13 @@
 #import "SLDelayPerform.h"
 #import "SLToolMacro.h"
 #import "UIView+SLFrame.h"
+#import "SLAvCaptureFlashBar.h"
 
 // TODO: 编辑暂时不考虑用原生做，否则Android一套iOS一套
 //#import "SLEditVideoController.h"
 //#import "SLEditImageController.h"
 
-#define KMaxDurationOfVideo  4.0 //录制最大时长 s
+#define KMaxDurationOfVideo  30.0 //录制最大时长 s
 
 @interface SLShotViewController ()<SLAvCaptureToolDelegate>
 {
@@ -37,6 +38,8 @@
 @property (nonatomic, strong) UIView *whiteView; //白色圆心
 @property (nonatomic, strong) CAShapeLayer *progressLayer; //环形进度条
 @property (nonatomic, strong)  UILabel *tipsLabel; //拍摄提示语  轻触拍照 长按拍摄
+@property (nonatomic, strong) UIButton *flashButton; //闪光灯按钮
+@property (nonatomic, strong) SLAvCaptureFlashBar *flashBar;//闪光灯选择条
 
 @property (nonatomic, assign) CGFloat currentZoomFactor; //当前焦距比例系数
 @property (nonatomic, strong) SLShotFocusView *focusView;   //当前聚焦视图
@@ -91,9 +94,10 @@
     [self.view addSubview:self.backBtn];
     [self.view addSubview:self.shotBtn];
     [self.view addSubview:self.switchCameraBtn];
+    [self.view addSubview:self.flashButton];
     
     [self.view addSubview:self.tipsLabel];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.tipsLabel removeFromSuperview];
     });
 }
@@ -125,9 +129,10 @@
 - (UIButton *)backBtn {
     if (_backBtn == nil) {
         _backBtn = [[UIButton alloc] init];
-        _backBtn.frame = CGRectMake(0, 0, 30, 30);
-        _backBtn.center = CGPointMake((self.view.sl_width/2 - 70/2.0)/2.0, self.view.sl_height - 80);
-        [_backBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+        _backBtn.frame = CGRectMake(0, 0, 48, 48);
+        _backBtn.center = CGPointMake((self.view.sl_width/2 - 72/2.0)/2.0, self.view.sl_height - 80);
+        NSBundle *bundle = [NSBundle bundleForClass:self.class];
+        [_backBtn setImage:[UIImage imageNamed:@"ic_close" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
         [_backBtn addTarget:self action:@selector(backBtn:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _backBtn;
@@ -136,7 +141,7 @@
     if (_shotBtn == nil) {
         _shotBtn = [[SLBlurView alloc] init];
         _shotBtn.userInteractionEnabled = YES;
-        _shotBtn.frame = CGRectMake(0, 0, 70, 70);
+        _shotBtn.frame = CGRectMake(0, 0, 72, 72);
         _shotBtn.center = CGPointMake(self.view.sl_width/2.0, self.view.sl_height - 80);
         _shotBtn.clipsToBounds = YES;
         _shotBtn.layer.cornerRadius = _shotBtn.sl_width/2.0;
@@ -147,7 +152,7 @@
         longPress.minimumPressDuration = 0.3;
         [_shotBtn addGestureRecognizer:longPress];
         //中心白色
-        self.whiteView.frame = CGRectMake(0, 0, 50, 50);
+        self.whiteView.frame = CGRectMake(0, 0, 60, 60);
         self.whiteView.center = CGPointMake(_shotBtn.sl_width/2.0, _shotBtn.sl_height/2.0);
         self.whiteView.layer.cornerRadius = self.whiteView.frame.size.width/2.0;
         [_shotBtn addSubview:self.whiteView];
@@ -156,8 +161,11 @@
 }
 - (UIButton *)switchCameraBtn {
     if (_switchCameraBtn == nil) {
-        _switchCameraBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.sl_width - 30 - 30, 44 , 30, 30)];
-        [_switchCameraBtn setImage:[UIImage imageNamed:@"cameraAround"] forState:UIControlStateNormal];
+        _switchCameraBtn = [[UIButton alloc] init];
+        _switchCameraBtn.frame = CGRectMake(0, 0, 48, 48);
+        _switchCameraBtn.center = CGPointMake((self.view.sl_width/2 + 72/2.0) + ((self.view.sl_width/2 - 72/2.0) / 2), self.view.sl_height - 80);
+        NSBundle *bundle = [NSBundle bundleForClass:self.class];
+        [_switchCameraBtn setImage:[UIImage imageNamed:@"switch_camera" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
         [_switchCameraBtn addTarget:self action:@selector(switchCameraClicked:) forControlEvents:UIControlEventTouchUpInside];
     }
     return _switchCameraBtn;
@@ -177,11 +185,11 @@
         _progressLayer = [CAShapeLayer layer];
         _progressLayer.frame = _shotBtn.bounds;
         _progressLayer.fillColor = [UIColor clearColor].CGColor;
-        _progressLayer.lineWidth = 10;
+        _progressLayer.lineWidth = 12;
         //线头的样式
         _progressLayer.lineCap = kCALineCapButt;
         //圆环颜色
-        _progressLayer.strokeColor = [UIColor colorWithRed:45/255.0 green:175/255.0 blue:45/255.0 alpha:1].CGColor;
+        _progressLayer.strokeColor = [UIColor redColor].CGColor;
         _progressLayer.strokeStart = 0;
         _progressLayer.strokeEnd = 0;
         //path 决定layer将被渲染成何种形状
@@ -204,6 +212,65 @@
         _tipsLabel.text = @"轻触拍照，按住摄像";
     }
     return  _tipsLabel;
+}
+- (UIButton *)flashButton {
+    if (!_flashButton) {
+        _flashButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_flashButton addTarget:self action:@selector(flashChange:) forControlEvents:UIControlEventTouchUpInside];
+        _flashButton.frame = CGRectMake(self.view.sl_width - 34 - 28, [[UIApplication sharedApplication] statusBarFrame].size.height + 14, 28, 28);
+        [self.view addSubview:_flashButton];
+    }
+    switch (self.avCaptureTool.flashMode) {
+        case AVCaptureFlashModeOff: {
+            NSBundle *bundle = [NSBundle bundleForClass:self.class];
+            [_flashButton setImage:[UIImage imageNamed:@"flash_off" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+            break;
+        }
+        case AVCaptureFlashModeAuto: {
+            NSBundle *bundle = [NSBundle bundleForClass:self.class];
+            [_flashButton setImage:[UIImage imageNamed:@"flash_auto" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+            break;
+        }
+        case AVCaptureFlashModeOn: {
+            NSBundle *bundle = [NSBundle bundleForClass:self.class];
+            [_flashButton setImage:[UIImage imageNamed:@"flash_on" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+            break;
+        }
+    }
+    return _flashButton;
+}
+- (SLAvCaptureFlashBar *)flashBar {
+    if (!_flashBar) {
+        CGFloat width = 28 * 4 + 36 * 3 + 12 * 2 + 18;
+        _flashBar = [[SLAvCaptureFlashBar alloc] initWithFrame:CGRectMake(self.view.sl_width - width - 22, [[UIApplication sharedApplication] statusBarFrame].size.height + (48 - 28 - 14), width, 48) type:self.avCaptureTool.flashMode];
+        __weak SLShotViewController *weakSelf = self;
+        _flashBar.onChooseFlashCompleted = ^(NSInteger type) {
+            weakSelf.flashButton.hidden = NO;
+            weakSelf.avCaptureTool.flashMode = type;
+            switch (weakSelf.avCaptureTool.flashMode) {
+                case AVCaptureFlashModeOff: {
+                    NSBundle *bundle = [NSBundle bundleForClass:weakSelf.class];
+                    [weakSelf.flashButton setImage:[UIImage imageNamed:@"flash_off" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+                    break;
+                }
+                case AVCaptureFlashModeAuto: {
+                    NSBundle *bundle = [NSBundle bundleForClass:weakSelf.class];
+                    [weakSelf.flashButton setImage:[UIImage imageNamed:@"flash_auto" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+                    break;
+                }
+                case AVCaptureFlashModeOn: {
+                    NSBundle *bundle = [NSBundle bundleForClass:weakSelf.class];
+                    [weakSelf.flashButton setImage:[UIImage imageNamed:@"flash_on" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+                    break;
+                }
+            }
+
+        };
+        _flashBar.layer.zPosition = 100;
+        _flashBar.hidden = YES;
+        [self.view addSubview:_flashBar];
+    }
+    return _flashBar;
 }
 
 #pragma mark - HelpMethods
@@ -265,6 +332,11 @@
 - (void)backBtn:(UIButton *)btn {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+//闪光灯
+- (void)flashChange:(UIButton *)btn {
+    btn.hidden = YES;
+    self.flashBar.hidden = NO;
+}
 //聚焦手势
 - (void)tapFocusing:(UITapGestureRecognizer *)tap {
     //如果没在运行，取消聚焦
@@ -272,9 +344,9 @@
         return;
     }
     CGPoint point = [tap locationInView:self.captureView];
-    if(point.y > self.shotBtn.sl_y || point.y < self.switchCameraBtn.sl_y + self.switchCameraBtn.sl_height) {
-        return;
-    }
+//    if(point.y > self.shotBtn.sl_y || point.y < self.switchCameraBtn.sl_y + self.switchCameraBtn.sl_height) {
+//        return;
+//    }
     [self focusAtPoint:point];
 }
 //设置焦点视图位置
@@ -318,18 +390,12 @@
 - (void)recordVideo:(UILongPressGestureRecognizer *)longPress {
     switch (longPress.state) {
         case UIGestureRecognizerStateBegan:{
-            self.shotBtn.sl_size = CGSizeMake(100, 100);
-            self.shotBtn.center = CGPointMake(self.view.sl_width/2.0, self.view.sl_height - 80);
-            self.shotBtn.layer.cornerRadius =  self.shotBtn.sl_height/2.0;
-            self.whiteView.sl_size = CGSizeMake(40, 40);
-            self.whiteView.center = CGPointMake(self.shotBtn.sl_width/2.0, self.shotBtn.sl_height/2.0);
-            self.whiteView.layer.cornerRadius = self.whiteView.sl_width/2.0;
             //开始计时
             [self startTimer];
             //添加进度条
             [self.shotBtn.layer addSublayer:self.progressLayer];
             self.progressLayer.strokeEnd = 0;
-            NSString *outputVideoFielPath = [NSTemporaryDirectory() stringByAppendingString:@"myVideo.mp4"];
+            NSString *outputVideoFielPath = [NSTemporaryDirectory() stringByAppendingString:@"cheban_camera_video.mp4"];
             //开始录制视频
             [self.avCaptureTool startRecordVideoToOutputFileAtPath:outputVideoFielPath recordType:SLAvCaptureTypeAv];
         }
@@ -340,12 +406,6 @@
             //            NSLog(@"正在摄像");
             break;
         case UIGestureRecognizerStateEnded:{
-            self.shotBtn.sl_size = CGSizeMake(70, 70);
-            self.shotBtn.center = CGPointMake(self.view.sl_width/2.0, self.view.sl_height - 80);
-            self.shotBtn.layer.cornerRadius =  self.shotBtn.sl_height/2.0;
-            self.whiteView.sl_size = CGSizeMake(50, 50);
-            self.whiteView.center = CGPointMake(self.shotBtn.sl_width/2.0, self.shotBtn.sl_height/2.0);
-            self.whiteView.layer.cornerRadius = self.whiteView.sl_width/2.0;
             //取消计时器
             dispatch_source_cancel(self->_gcdTimer);
             self->_durationOfVideo = 0;
@@ -394,14 +454,14 @@
         return;
     }
     NSString *prefixPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-    NSString *path = [NSString stringWithFormat:@"%@/image_%@.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
+    NSString *path = [NSString stringWithFormat:@"%@/image_%f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
     NSData *data = [self compressImage:image maxLen:1024 * 500];
     if ([data writeToURL:[NSURL fileURLWithPath:path] atomically:YES]) {
         NSDictionary *result = @{
             @"width": [NSNumber numberWithInt:image.size.width],
             @"height": [NSNumber numberWithInt:image.size.height],
             @"type": @1,
-            @"origin_file_path": @"",
+            @"origin_file_path": path,
             @"thumbnail_file_path": @"",
         };
         self.flutterResult(result);
@@ -428,10 +488,56 @@
 //        NSLog(@"%@ %@", result , error.localizedDescription);
 //        [SLAlertView showAlertViewWithText:result delayHid:1];
 //    }];
-    
+    UIImage *image = [self thumbnailImageForVideo:outputFileURL];
+    if (image != nil) {
+        NSString *prefixPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+        NSString *path = [NSString stringWithFormat:@"%@/image_%f.jpg", prefixPath, [[NSDate date] timeIntervalSince1970]];
+        NSInteger duration = [self totalSecondForVideo:outputFileURL];
+        NSData *data = [self compressImage:image maxLen:1024 * 500];
+        if ([data writeToURL:[NSURL fileURLWithPath:path] atomically:YES]) {
+            NSDictionary *result = @{
+                @"width": [NSNumber numberWithInteger:image.size.width],
+                @"height": [NSNumber numberWithInteger:image.size.height],
+                @"type": @2,
+                @"origin_file_path": outputFileURL.path,
+                @"thumbnail_file_path": path,
+                @"duration": [NSNumber numberWithInteger:duration]
+            };
+            self.flutterResult(result);
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }
+
+    }
     NSInteger fileSize = (NSInteger)[[NSFileManager defaultManager] attributesOfItemAtPath:outputFileURL.path error:nil].fileSize;
     NSLog(@"视频文件大小 === %.2fM",fileSize/(1024.0*1024.0));
 }
+
+//let image = self.thumbnailImageForVideo(videoURL: videoURL!)
+//let compressData = self.compressImage(image: image!, maxLength: 1024 * 500)
+//if (image != nil) {
+//    let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/image_\(Int(Date().timeIntervalSince1970)).jpg"
+//    let duration = self.totalSecondForVideo(videoURL: videoURL!)
+//    if (duration == 0) {
+//        return
+//    }
+//    do {
+//        try compressData.write(to: URL(fileURLWithPath: path))
+//        self.flutterResult!([
+//            "width": Int(image!.size.width),
+//            "height": Int(image!.size.height),
+//            "type": 2,
+//            "origin_file_path": videoURL!.path,
+//            "thumbnail_file_path": path,
+//            "duration": duration,
+//        ])
+//        DispatchQueue.main.asyncAfter(deadline: .now() + self.delayDismissTime, execute: {
+//            self.dismiss(animated: false)
+//        })
+//    } catch {
+//        print("写入文件失败")
+//    }
+//}
+
 
 - (NSData *)compressImage:(UIImage *)image maxLen:(NSInteger)maxLength {
     NSInteger tempMaxLength = maxLength;
@@ -468,6 +574,22 @@
         data = UIImageJPEGRepresentation(image, 0.1);
     }
     return data;
+}
+
+- (UIImage *)thumbnailImageForVideo:(NSURL *)videoURL {
+    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
+    AVAssetImageGenerator *assetImage = [AVAssetImageGenerator assetImageGeneratorWithAsset:asset];
+    assetImage.appliesPreferredTrackTransform = YES;
+    assetImage.apertureMode = AVAssetImageGeneratorApertureModeEncodedPixels;
+    CGImageRef imageRef = [assetImage copyCGImageAtTime:CMTimeMake(0, 50) actualTime:nil error:nil];
+    return [UIImage imageWithCGImage:imageRef];
+}
+
+- (NSInteger)totalSecondForVideo:(NSURL *)videoURL {
+    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
+    CMTime time = asset.duration;
+    CGFloat sec = CMTimeGetSeconds(time);
+    return ceil(sec);
 }
 
 @end
