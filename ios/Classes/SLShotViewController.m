@@ -57,10 +57,14 @@
 }
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.avCaptureTool startRunning];
-    [self focusAtPoint:CGPointMake(SL_kScreenWidth/2.0, SL_kScreenHeight/2.0)];
-    //监听设备方向，旋转切换摄像头按钮
-    [self.avCaptureTool addObserver:self forKeyPath:@"shootingOrientation" options:NSKeyValueObservingOptionNew context:nil];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self.avCaptureTool startRunning];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self focusAtPoint:CGPointMake(SL_kScreenWidth/2.0, SL_kScreenHeight/2.0)];
+            //监听设备方向，旋转切换摄像头按钮
+            [self.avCaptureTool addObserver:self forKeyPath:@"shootingOrientation" options:NSKeyValueObservingOptionNew context:nil];
+        });
+    });
 }
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
