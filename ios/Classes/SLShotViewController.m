@@ -55,13 +55,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setupUI];
-}
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
     [self.avCaptureTool startRunning];
     [self focusAtPoint:CGPointMake(SL_kScreenWidth/2.0, SL_kScreenHeight/2.0)];
     //监听设备方向，旋转切换摄像头按钮
     [self.avCaptureTool addObserver:self forKeyPath:@"shootingOrientation" options:NSKeyValueObservingOptionNew context:nil];
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
 }
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
