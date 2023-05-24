@@ -55,7 +55,7 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
 //              }
 //          }
       } else if (call.method == "destory") {
-          if (true == UIApplication.shared.keyWindow?.rootViewController?.presentedViewController?.isKind(of: CameraViewController.self)) {
+          if (true == UIApplication.shared.keyWindow?.rootViewController?.presentedViewController?.isKind(of: SLShotViewController.self)) {
               UIApplication.shared.keyWindow?.rootViewController?.presentedViewController?.dismiss(animated: true)
           }
       }

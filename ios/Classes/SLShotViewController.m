@@ -45,6 +45,7 @@
 
 @property (nonatomic, assign) CGFloat currentZoomFactor; //当前焦距比例系数
 @property (nonatomic, strong) SLShotFocusView *focusView;   //当前聚焦视图
+@property (nonatomic, strong) UIVisualEffectView *backdropView;
 
 @end
 
@@ -57,14 +58,10 @@
 }
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [self.avCaptureTool startRunning];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self focusAtPoint:CGPointMake(SL_kScreenWidth/2.0, SL_kScreenHeight/2.0)];
-            //监听设备方向，旋转切换摄像头按钮
-            [self.avCaptureTool addObserver:self forKeyPath:@"shootingOrientation" options:NSKeyValueObservingOptionNew context:nil];
-        });
-    });
+    [self.avCaptureTool startRunning];
+    [self focusAtPoint:CGPointMake(SL_kScreenWidth/2.0, SL_kScreenHeight/2.0)];
+    //监听设备方向，旋转切换摄像头按钮
+    [self.avCaptureTool addObserver:self forKeyPath:@"shootingOrientation" options:NSKeyValueObservingOptionNew context:nil];
 }
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
@@ -95,6 +92,7 @@
 - (void)setupUI {
     self.title = @"拍摄";
     self.view.backgroundColor = [UIColor whiteColor];
+
     [self.view addSubview:self.captureView];
     
     [self.view addSubview:self.backBtn];
@@ -102,7 +100,14 @@
     [self.shotBtn.layer addSublayer:self.traceLayer];
     [self.view addSubview:self.switchCameraBtn];
     [self.view addSubview:self.flashButton];
-    
+    [self.view addSubview:self.backdropView];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * 1), dispatch_get_main_queue(), ^{
+        [UIView animateWithDuration:0.45 animations:^{
+            self.backdropView.alpha = 0;
+        } completion:^(BOOL finished) {
+            [self.backdropView removeFromSuperview];
+        }];
+    });
     [self.view addSubview:self.tipsLabel];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.tipsLabel removeFromSuperview];
@@ -110,6 +115,13 @@
 }
 
 #pragma mark - Getter
+- (UIVisualEffectView *)backdropView {
+    if (_backdropView == nil) {
+        _backdropView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+        _backdropView.frame = self.view.bounds;
+    }
+    return _backdropView;
+}
 - (SLAvCaptureTool *)avCaptureTool {
     if (_avCaptureTool == nil) {
         _avCaptureTool = [[SLAvCaptureTool alloc] init];
@@ -274,24 +286,9 @@
         _flashButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [_flashButton addTarget:self action:@selector(flashChange:) forControlEvents:UIControlEventTouchUpInside];
         _flashButton.frame = CGRectMake(self.view.sl_width - 34 - 28, [[UIApplication sharedApplication] statusBarFrame].size.height + 14, 28, 28);
+        NSBundle *bundle = [NSBundle bundleForClass:self.class];
+        [_flashButton setImage:[UIImage imageNamed:@"flash_off" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
         [self.view addSubview:_flashButton];
-    }
-    switch (self.avCaptureTool.flashMode) {
-        case AVCaptureFlashModeOff: {
-            NSBundle *bundle = [NSBundle bundleForClass:self.class];
-            [_flashButton setImage:[UIImage imageNamed:@"flash_off" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
-            break;
-        }
-        case AVCaptureFlashModeAuto: {
-            NSBundle *bundle = [NSBundle bundleForClass:self.class];
-            [_flashButton setImage:[UIImage imageNamed:@"flash_auto" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
-            break;
-        }
-        case AVCaptureFlashModeOn: {
-            NSBundle *bundle = [NSBundle bundleForClass:self.class];
-            [_flashButton setImage:[UIImage imageNamed:@"flash_on" inBundle:bundle compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
-            break;
-        }
     }
     return _flashButton;
 }
