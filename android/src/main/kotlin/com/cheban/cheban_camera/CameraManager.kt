@@ -295,6 +295,7 @@ class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
             if (facing == CameraFacing.FRONT) {
                 when (orientation) {
                     ExifInterface.ORIENTATION_ROTATE_90 -> degree = 90
+                    ExifInterface.ORIENTATION_TRANSVERSE -> degree = 90
                     ExifInterface.ORIENTATION_ROTATE_180 -> degree = 180
                     ExifInterface.ORIENTATION_ROTATE_270 -> degree = 270
                 }
