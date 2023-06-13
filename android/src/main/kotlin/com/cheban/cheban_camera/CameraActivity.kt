@@ -42,6 +42,7 @@ class CameraActivity : AppCompatActivity() {
         var result: MethodChannel.Result? = null
         var sourceType: Int = 3
         var faceType: Int = 1
+        var appType: Int = 0
         @JvmStatic
         var cameraActivity: CameraActivity? = null
     }
@@ -123,6 +124,9 @@ class CameraActivity : AppCompatActivity() {
         mScreenshotImageView = findViewById(R.id.iv_screenshot)
         mPreviewView.scaleType = PreviewView.ScaleType.FIT_CENTER
         mPreviewView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        if (appType == 1) {
+            mProgressCircular.setIndicatorColor(Color.parseColor("#20BC9A"))
+        }
 
         mFlashSelectionBar.setListener(object : OnFlashSelectionListener {
             override fun callback(value: Int) {

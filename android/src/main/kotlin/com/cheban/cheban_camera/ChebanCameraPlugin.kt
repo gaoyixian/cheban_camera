@@ -42,6 +42,7 @@ class ChebanCameraPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
       val dict: Map<*, *> = call.arguments as Map<*, *>
       CameraActivity.sourceType =  (dict["source_type"] as Int)
       CameraActivity.faceType = (dict["face_type"] as Int)
+      CameraActivity.appType = (dict["appType"] as Int)
       val intent = Intent(context, CameraActivity::class.java)
       context!!.startActivity(intent)
       /// 是否执行动画
