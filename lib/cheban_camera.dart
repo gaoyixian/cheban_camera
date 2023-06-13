@@ -8,9 +8,15 @@ class ChebanCamera {
   }
 
   Future<CameraModel?> pickCamera(
-      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack, int animated = 1}) {
-    return ChebanCameraPlatform.instance
-        .pickCamera(sourceType: sourceType, faceType: faceType, animated: animated);
+      {int sourceType = CameraTypeAll,
+      int faceType = FaceTypeBack,
+      int animated = 1,
+      int appType = 0}) {
+    return ChebanCameraPlatform.instance.pickCamera(
+        sourceType: sourceType,
+        faceType: faceType,
+        animated: animated,
+        appType: appType);
   }
 
   Future<void> destory() {
