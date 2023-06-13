@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) NSInteger faceType;
 @property (assign, nonatomic) NSInteger sourceType;
+@property (assign, nonatomic) NSInteger appType;
 
 @property (copy, nonatomic) FlutterResult flutterResult;
 

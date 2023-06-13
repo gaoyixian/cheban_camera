@@ -239,7 +239,11 @@
         //线头的样式
         _progressLayer.lineCap = kCALineCapButt;
         //圆环颜色
-        _progressLayer.strokeColor = [UIColor redColor].CGColor;
+        if (self.appType == 0) {
+            _progressLayer.strokeColor = [UIColor colorWithRed:245.0/255.0 green:51.0/255.0 blue:87.0/255.0 alpha:1.0].CGColor;
+        } else {
+            _progressLayer.strokeColor = [UIColor colorWithRed:32.0/255.0 green:188.0/255.0 blue:154.0/255.0 alpha:1.0].CGColor;
+        }
         _progressLayer.strokeStart = 0;
         _progressLayer.strokeEnd = 0;
         //path 决定layer将被渲染成何种形状
