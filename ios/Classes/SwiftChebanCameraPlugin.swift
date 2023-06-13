@@ -16,11 +16,13 @@ public class SwiftChebanCameraPlugin: NSObject, FlutterPlugin {
           let sourceType = dict["source_type"] as! Int
           let faceType = dict["face_type"] as! Int
           let animated = dict["animated"] as? Int
+          let appType = dict["appType"] as? Int
           
           let cameraVC = SLShotViewController()
           cameraVC.flutterResult = result
           cameraVC.sourceType = sourceType
           cameraVC.faceType = faceType
+          cameraVC.appType = appType ?? 0
           cameraVC.modalPresentationStyle = .overFullScreen
           if let anim = animated, anim == 1 {
               UIApplication.shared.keyWindow!.rootViewController!.present(cameraVC, animated: true)

@@ -19,9 +19,9 @@ class MethodChannelChebanCamera extends ChebanCameraPlatform {
 
   @override
   Future<CameraModel?> pickCamera(
-      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack, int animated = 1}) async {
+      {int sourceType = CameraTypeAll, int faceType = FaceTypeBack, int animated = 1, int appType = 0}) async {
     Map? _map = await methodChannel.invokeMethod('takePhotoAndVideo',
-        {"source_type": sourceType, "face_type": faceType, 'animated': animated});
+        {"source_type": sourceType, "face_type": faceType, 'animated': animated, 'appType': appType});
     if (_map != null) {
       Map<String, dynamic> _muMap = {};
       for (var key in _map.keys) {
