@@ -23,7 +23,6 @@ import android.widget.RelativeLayout.LayoutParams
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.*
 import androidx.camera.video.*

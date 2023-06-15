@@ -15,8 +15,8 @@ import android.util.Size
 import android.view.OrientationEventListener
 import android.view.Surface
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.AspectRatio.RATIO_16_9
 import androidx.camera.core.AspectRatio.RATIO_4_3
@@ -36,9 +36,9 @@ import java.util.Arrays
 import java.util.concurrent.TimeUnit
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-class CameraManager(context: AppCompatActivity, previewView: PreviewView) {
+class CameraManager(context: ComponentActivity, previewView: PreviewView) {
 
-    private var context: AppCompatActivity
+    private var context: ComponentActivity
     private var previewView: PreviewView
 
     private var mImageCapture: ImageCapture? = null
