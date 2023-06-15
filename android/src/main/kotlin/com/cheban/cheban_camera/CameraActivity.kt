@@ -21,6 +21,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.RelativeLayout.LayoutParams
 import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -36,7 +37,7 @@ import java.io.*
 import java.util.*
 
 
-class CameraActivity : AppCompatActivity() {
+class CameraActivity : ComponentActivity() {
 
     companion object {
         var result: MethodChannel.Result? = null
