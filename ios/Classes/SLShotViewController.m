@@ -264,7 +264,7 @@
         _tipsLabel.font = [UIFont systemFontOfSize:14];
         _tipsLabel.textAlignment = NSTextAlignmentCenter;
         if (self.sourceType == 1) {
-            _tipsLabel.text = @"点击拍照";
+            _tipsLabel.text = @"Click to Take Photo";
         } else if (self.sourceType == 2) {
             _tipsLabel.text = @"按住摄像";
         } else {

@@ -201,7 +201,7 @@ class CameraActivity : ComponentActivity() {
         /// 模式设置
         if (sourceType == 1) {
             mProgressCircular.trackColor = Color.WHITE
-            mTipTextView.text = "点击拍照"
+            mTipTextView.text = "Click to Take Photo"
             mCameraManager.captureMode = CameraCaptureMode.PICTURE
         } else {
             mCameraManager.captureMode = CameraCaptureMode.ALL
